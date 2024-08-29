@@ -8,15 +8,11 @@
     --brShadow: -6px 6px 15px;
 }
 
-.honeypot {
-    position: absolute;
-    left: -9999px; /* Position off-screen */
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    opacity: 0;
+.error-message{
+    font-weight: bold !important;
+    color: red !important;
+    font-size: 18px !important;
 }
-
 *{
     padding: 0;
     margin: 0;

@@ -52,8 +52,9 @@
                     </div>
                     <input type="submit" value="Sign Up" class="btn solid">
                     <br>
+                    {% if signup_error %}<div class="error-message">{{ signup_error }}</div>{% endif %}
+                    <br>
                 </form>
-
                 <form action="/login" method="POST" class="sign-in-form">
                     <h2 class="title">Sign In</h2>
                     <div class="input-field">
@@ -69,10 +70,11 @@
                     <p style="color: white; font-size: 20px;">Solve this: {{ captcha_question }}</p>
                     <div class="input-field">
                         <i class="fas fa-robot"></i>
+                        <input type="captcha" placeholder="Captcha" name="captcha" autocomplete="off" required>
                         {% for honeypot_name, honeypot_value in login_honeypots.items() if 'captcha' in honeypot_name %}<input type="hidden" name="{{ honeypot_name }}" value="{{ honeypot_value }}">{% endfor %}
-                        <input type="captcha" placeholder="Captcha" name="captcha" required>
                     </div>
-                    <input type="submit" value="Login" class="btn solid">
+                    <input type="submit" value="Login" class="btn solid"><br>
+                    {% if login_error %}<div class="error-message">{{ login_error }}</div>{% endif %}
                 </form>
             </div>
         </div>

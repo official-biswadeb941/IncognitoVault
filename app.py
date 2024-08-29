@@ -7,6 +7,7 @@ from modules.session import session as session_module
 from modules.form import LoginForm, SignupForm
 from datetime import timedelta, datetime
 from functools import wraps
+from collections import deque
 import random, string, logging, pymysql, json, os, secrets
 from modules.captcha import generate_captcha, validate_captcha
 from flask_sslify import SSLify
@@ -29,8 +30,8 @@ limiter = Limiter(
 
 SESSION_TIMEOUT = 60
 app.permanent_session_lifetime = timedelta(seconds=SESSION_TIMEOUT)
-MAX_LOGIN_ATTEMPTS = 5
-BLOCK_DURATION_MINUTES = 15
+request_times = deque()
+window_duration = timedelta(minutes=1)
 
 # Load MySQL configuration from config.json
 with open('Database/DB.json', 'r') as f:
@@ -95,11 +96,23 @@ def generate_app_id():
     random_string = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
     return f"IncognitoVault-{random_string}"
 
+def record_request():
+    current_time = datetime.now()
+    request_times.append(current_time)
+    while request_times and request_times[0] < current_time - window_duration:
+        request_times.popleft()
+
 def dynamic_rate_limit():
-    current_hour = datetime.now().hour
-    if 8 <= current_hour <= 18:
-        return "10 per minute"
-    return "60 per minute"
+    record_request()
+    request_count = len(request_times)
+    if request_count > 2500:
+        return "5 per minute"  # Strict limit for high traffic
+    elif request_count > 1250:
+        return "10 per minute"  # Moderate limit for medium traffic
+    elif request_count > 625:
+        return "20 per minute"  # Low limit for low traffic
+    else:
+        return "60 per minute"  # Relaxed limit for very low traffic
 
 def user_rate_limit():
     user_id = session.get('user_id', get_remote_address())
@@ -155,7 +168,6 @@ def generate_honeypot_fields_for_fields(fields, length=16):
         honeypots[honeypot_name] = honeypot_value
     return honeypots
 
-
 def user_exists(name, email):
     try:
         with db.cursor() as cursor:
@@ -194,9 +206,10 @@ def signup(name, email, password):
         print(f"Error signing up: {str(e)}")
         return jsonify({"error": "Failed to sign up"}), 500
 
-#################### Route Handlers #####################
+
+#################### Rate Limiters ######################
+@limiter.limit(dynamic_rate_limit)
 @app.route('/')
-@limiter.limit("10 per minute")
 def index():
     login_form = LoginForm()
     signup_form = SignupForm()
@@ -211,7 +224,7 @@ def index():
     return render_template('auth.html', login_form=login_form, signup_form=signup_form, captcha_question=captcha_question, signup_honeypots=signup_honeypots, login_honeypots=login_honeypots, app_id=app_id)
 
 @app.route('/signup', methods=['POST', 'GET'])
-@limiter.limit("10 per minute")
+@limiter.limit(dynamic_rate_limit)
 def signup_route():
     signup_form = SignupForm()
     signup_honeypots = session.get('signup_honeypots', {})
@@ -239,36 +252,50 @@ def signup_route():
     return render_template('auth.html', signup_error='Invalid CAPTCHA', login_error=None, login_form=LoginForm(), signup_form=SignupForm(), captcha_question=captcha_question)
 
 @app.route('/login', methods=['POST', 'GET'])
-@limiter.limit("10 per minute")
+@limiter.limit(dynamic_rate_limit)
 def login_route():
     login_form = LoginForm()
     login_honeypots = session.get('login_honeypots', {})
+    signup_honeypots = session.get('signup_honeypots', {})  # Ensure this variable is always defined
     captcha_answer = session.get('captcha_answer')
     user_captcha_answer = request.form.get('captcha')
+
+    # Check honeypots
     for honeypot_name, expected_value in login_honeypots.items():
         if request.form.get(honeypot_name) != expected_value:
-            return render_template('auth.html', login_error='Invalid honeypot value detected.', signup_error=None, login_form=login_form, signup_form=SignupForm(), captcha_question=captcha_answer)
+            return render_template('auth.html', login_error='Invalid honeypot value detected.', 
+                                   signup_error=None, login_form=login_form, 
+                                   signup_form=SignupForm(), captcha_question=captcha_answer, 
+                                   signup_honeypots=signup_honeypots, login_honeypots=login_honeypots)
+
     if login_form.validate_on_submit() and validate_captcha(int(user_captcha_answer) if user_captcha_answer else None, captcha_answer):
         name = login_form.name.data
         password = login_form.password.data
         user = login(name, password)
         if user:
-            session.clear()            
-            response = make_response(redirect('/Dashboard'))  
+            session.clear()
+            response = make_response(redirect('/Dashboard'))
             session['user'] = user
             session['user_id'] = generate_user_id(name)
             session.permanent = True
             session['last_activity'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            response.set_cookie('session', '', max_age=0) 
+            response.set_cookie('session', '', max_age=0)
             response.set_cookie('session', 'new', max_age=SESSION_TIMEOUT, httponly=True, secure=True, samesite='Lax')
             return response
         else:
             captcha_question, captcha_answer = generate_captcha()
             session['captcha_answer'] = captcha_answer
-            return render_template('auth.html', login_error='Invalid credentials', signup_error=None, login_form=login_form, signup_form=SignupForm(), captcha_question=captcha_question)
+            return render_template('auth.html', login_error='Invalid credentials', 
+                                   signup_error=None, login_form=login_form, 
+                                   signup_form=SignupForm(), captcha_question=captcha_question, 
+                                   signup_honeypots=signup_honeypots, login_honeypots=login_honeypots)
+
     captcha_question, captcha_answer = generate_captcha()
     session['captcha_answer'] = captcha_answer
-    return render_template('auth.html', login_error='Invalid CAPTCHA', signup_error=None, login_form=login_form, signup_form=SignupForm(), captcha_question=captcha_question)
+    return render_template('auth.html', login_error='Invalid CAPTCHA', 
+                           signup_error=None, login_form=login_form, 
+                           signup_form=SignupForm(), captcha_question=captcha_question, 
+                           signup_honeypots=signup_honeypots, login_honeypots=login_honeypots)
 
 @app.route('/Dashboard') 
 @session_expiry
@@ -340,6 +367,8 @@ def internal_error(error):
 def rate_limit_error(e):
     user_ip = get_remote_address()
     logging.warning(f"Rate limit exceeded for IP: {user_ip}")
+    if 'user' in session:
+        return jsonify({"error": "Too many requests. Please try again later."}), 429
     return render_template('Error-Page/429-Many-Request.html', user_ip=user_ip), 429
 
 @app.errorhandler(BadRequest)
@@ -351,5 +380,4 @@ def csrf_error(e):
     return render_template('Error-Page/500-Internal-Server-Error.html', user_ip=user_ip), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=8800)
-
+    app.run(debug=True, host='0.0.0.0', port=880)
