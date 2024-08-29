@@ -227,6 +227,7 @@ def index():
 @limiter.limit(dynamic_rate_limit)
 def signup_route():
     signup_form = SignupForm()
+    login_honeypots = session.get('login_honeypots', {})
     signup_honeypots = session.get('signup_honeypots', {})
     captcha_answer = session.get('captcha_answer')
     user_captcha_answer = request.form.get('captcha')
@@ -240,16 +241,16 @@ def signup_route():
         if user_exists(name, email):
             captcha_question, captcha_answer = generate_captcha()
             session['captcha_answer'] = captcha_answer
-            return render_template('auth.html', signup_error='User with provided details already exists', login_error=None, login_form=LoginForm(), signup_form=signup_form, captcha_question=captcha_question)
+            return render_template('auth.html', signup_error='User with provided details already exists', login_error=None, login_form=LoginForm(), signup_form=signup_form, captcha_question=captcha_question, signup_honeypots=signup_honeypots, login_honeypots=login_honeypots)
         if signup(name, email, password):
             return redirect('/login')
         else:
             captcha_question, captcha_answer = generate_captcha()
             session['captcha_answer'] = captcha_answer
-            return render_template('auth.html', signup_error='Signup failed. Please try again.', login_error=None, login_form=LoginForm(), signup_form=signup_form, captcha_question=captcha_question)
+            return render_template('auth.html', signup_error='Signup failed. Please try again.', login_error=None, login_form=LoginForm(), signup_form=signup_form, captcha_question=captcha_question, signup_honeypots=signup_honeypots, login_honeypots=login_honeypots)
     captcha_question, captcha_answer = generate_captcha()
     session['captcha_answer'] = captcha_answer
-    return render_template('auth.html', signup_error='Invalid CAPTCHA', login_error=None, login_form=LoginForm(), signup_form=SignupForm(), captcha_question=captcha_question)
+    return render_template('auth.html', signup_error='Invalid CAPTCHA', login_error=None, login_form=LoginForm(), signup_form=SignupForm(), captcha_question=captcha_question, signup_honeypots=signup_honeypots, login_honeypots=login_honeypots)
 
 @app.route('/login', methods=['POST', 'GET'])
 @limiter.limit(dynamic_rate_limit)
