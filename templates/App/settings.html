@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Settings - IncognitoVault</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='Pictures/lock.ico') }}">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <meta name="user-id" content="{{ user_id }}">
+  <meta name="app-id" content="{{app_id}}">
+  <meta name="organization" content="IncognitoVault - Secure Personal Space Solutions">
+  <meta name="description" content="IncognitoVault provides secure and private digital spaces for personal and professional use.">
+  <meta name="author" content="ParseSphere Innovations">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='CSS/dashboard.css') }}">
+</head>
+
+<body id="body-pd">
+
+  <div id="loader" class="loader">
+    <div class="spinner"></div>
+    <h2>Fetching your data, please wait...</h2>
+  </div>
+
+  <header class="header" id="header">
+    <div class="header_toggle">
+      <i class='bx bx-menu' id="header-toggle"></i>
+    </div>
+    <div class="logo_img">
+      <i class='bx bx-lock nav_logo-icon'><b>IV</b></i>
+    </div>
+  </header>
+
+  <div class="l-navbar" id="nav-bar">
+    <nav class="nav">
+      <div>
+        <a href="javascript:void(0);" class="nav_logo">
+          <i class='bx bx-lock nav_logo-icon'></i>
+          <span class="lock-name"><strong>Incognito Vault</strong></span>
+        </a>
+        <div class="nav_list">
+          <a href="/Dashboard" class="nav_link">
+            <i class='bx bx-grid-alt nav_icon'></i>
+            <span class="nav_name"><strong>Dashboard</strong></span>
+          </a>
+          <a href="/Form" class="nav_link">
+            <i class='bx bx-file nav_icon'></i>
+            <span class="nav_name"><strong>Forms</strong></span>
+          </a>
+          <a href="/Database" class="nav_link">
+            <i class='bx bx-data nav_icon'></i>
+            <span class="nav_name"><strong>Database</strong></span>
+          </a>
+          <a href="/Logs" class="nav_link">
+            <i class='bx bx-book nav_icon'></i>
+            <span class="nav_name"><strong>Logs</strong></span>
+          </a>
+          <a href="/Settings" class="nav_link active">
+            <i class='bx bx-cog nav_icon'></i>
+            <span class="nav_name"><strong>Settings</strong></span>
+          </a>
+        </div>
+      </div>
+      <a href="/logout" class="nav_link">
+        <i class='bx bx-log-out nav_icon'></i>
+        <span class="nav_name"><strong>SignOut</strong></span>
+      </a>
+    </nav>
+  </div>
+<br>
+  <div class="height-100">
+    <div class="container">
+      <!-- Breadcrumbs -->
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">Home</a></li>
+          <li class="breadcrumb-item"><a href="#">Settings</a></li>
+        </ol>
+      </nav>
+
+      <!-- Password Changing Form -->
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title">Change Password</h5>
+        </div>
+        <div class="card-body">
+          <form action="/change-password" method="POST">
+            <div class="mb-3">
+              <label for="current-password" class="form-label">Current Password</label>
+              <input type="password" class="form-control" id="current-password" name="current-password" required>
+            </div>
+            <div class="mb-3">
+              <label for="new-password" class="form-label">New Password</label>
+              <input type="password" class="form-control" id="new-password" name="new-password" required>
+            </div>
+            <div class="mb-3">
+              <label for="confirm-password" class="form-label">Confirm New Password</label>
+              <input type="password" class="form-control" id="confirm-password" name="confirm-password" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Change Password</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Notification Card -->
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title">Notifications</h5>
+        </div>
+        <div class="card-body">
+          <div id="notification" class="notification"></div>
+          <div class="notification-card-header">Notification History</div>
+          <div id="notification-history-list">
+            <!-- This section will be populated with notification items dynamically -->
+          </div>
+        </div>
+      </div>
+
+      <!-- SMTP and API Configuration Form -->
+<div class="card">
+  <div class="card-header">
+    <h5 class="card-title">Email Configuration</h5>
+  </div>
+  <div class="card-body">
+    <!-- Option to choose between SMTP and API -->
+    <div class="mb-3 form-check">
+      <input type="radio" class="form-check-input" id="smtp-option" name="smtp-option" onclick="toggleEmailOption('smtp')">
+      <label class="form-check-label" for="smtp-option">Send Mail via SMTP</label>
+    </div>
+    <div id="smtp-config" style="display: none;">
+      <form action="/configure-smtp" method="POST">
+        <div class="mb-3">
+          <label for="smtp-server" class="form-label">SMTP Server</label>
+          <input type="text" class="form-control" id="smtp-server" name="smtp-server" required>
+        </div>
+        <div class="mb-3">
+          <label for="smtp-port" class="form-label">Port</label>
+          <input type="number" class="form-control" id="smtp-port" name="smtp-port" required>
+        </div>
+        <div class="mb-3">
+          <label for="smtp-username" class="form-label">Username</label>
+          <input type="text" class="form-control" id="smtp-username" name="smtp-username" required>
+        </div>
+        <div class="mb-3">
+          <label for="smtp-password" class="form-label">Password</label>
+          <input type="password" class="form-control" id="smtp-password" name="smtp-password" required>
+        </div>
+        <div class="mb-3 form-check">
+          <input type="checkbox" class="form-check-input" id="smtp-ssl" name="smtp-ssl">
+          <label class="form-check-label" for="smtp-ssl">Use SSL</label>
+        </div>
+        <button type="submit" class="btn btn-primary">Save SMTP Settings</button>
+      </form>
+    </div>
+    <br>
+    <!-- Option for API Configuration -->
+    <div class="mb-3 form-check">
+      <input type="radio" class="form-check-input" id="api-option" name="api-option" onclick="toggleEmailOption('api')">
+      <label class="form-check-label" for="api-option">Send Mail via API</label>
+    </div>
+    <div id="api-config" style="display: none;">
+      <form action="/configure-api" method="POST">
+        <div class="mb-3">
+          <label for="api-key" class="form-label">API Key</label>
+          <input type="text" class="form-control" id="api-key" name="api-key" required>
+        </div>
+        <div class="mb-3">
+          <label for="api-url" class="form-label">API Endpoint URL</label>
+          <input type="url" class="form-control" id="api-url" name="api-url" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Save API Settings</button>
+      </form>
+    </div>
+  </div>
+</div>
+    </div>
+  </div>
+
+  <!-- SMTP Configuration Form -->
+
+
+<br>
+  <footer class="footer mt-auto py-3 frosted-div">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6">
+          <span class="text-muted"><strong>&copy; 2024 IncognitoVault. All rights reserved.</strong></span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous"></script>
+  <script src="{{ url_for('static', filename='JS/alive.js') }}"></script>
+  <script src="{{ url_for('static', filename='JS/dashboard.js') }}"></script>
+
+  <script>
+    function toggleEmailOption(option) {
+      const smtpOption = document.getElementById('smtp-option');
+      const apiOption = document.getElementById('api-option');
+      const smtpConfig = document.getElementById('smtp-config');
+      const apiConfig = document.getElementById('api-config');
+  
+      if (option === 'smtp') {
+        if (smtpOption.checked) {
+          smtpConfig.style.display = 'block';
+          apiConfig.style.display = 'none';
+          apiOption.checked = false;
+        } else {
+          smtpConfig.style.display = 'none';
+        }
+      } else if (option === 'api') {
+        if (apiOption.checked) {
+          apiConfig.style.display = 'block';
+          smtpConfig.style.display = 'none';
+          smtpOption.checked = false;
+        } else {
+          apiConfig.style.display = 'none';
+        }
+      }
+    }
+  </script>
+
+</body>
+</html>

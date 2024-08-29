@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard - IncognitoVault</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='Pictures/lock.ico') }}">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <meta name="user-name" content="{{ user.name }}">
+  <meta name="user-id" content="{{ user_id }}">
+  <meta name="app-id" content="{{app_id}}">
+  <meta name="organization" content="IncognitoVault - Secure Personal Space Solutions">
+  <meta name="description" content="IncognitoVault provides secure and private digital spaces for personal and professional use.">
+  <meta name="author" content="ParseSphere Innovations">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='CSS/dashboard.css') }}">
+</head>
+
+<body id="body-pd">
+
+    <div id="loader" class="loader">
+        <div class="spinner"></div>
+        <h2>Fetching your data, please wait...</h2>
+    </div>
+
+  <header class="header" id="header">
+      <div class="header_toggle">
+          <i class='bx bx-menu' id="header-toggle"></i>
+      </div>
+      <div class="logo_img">
+        <i class='bx bx-lock nav_logo-icon'><b>IV</b></i>
+      </div>
+</header>
+
+  <div class="l-navbar" id="nav-bar">
+      <nav class="nav">
+          <div>
+              <a href="javascript:void(0);" class="nav_logo">
+                  <i class='bx bx-lock nav_logo-icon'></i>
+                  <span class="lock-name"><strong>Incognito Vault</strong></span>
+              </a>
+              <div class="nav_list">
+                  <a href="/Dashboard" class="nav_link active">
+                      <i class='bx bx-grid-alt nav_icon'></i>
+                      <span class="nav_name"><strong>Dashboard</strong></span>
+                  </a>
+                  <a href="/Form" class="nav_link">
+                    <i class='bx bx-file nav_icon'></i>
+                    <span class="nav_name"><strong>Forms</strong></span>
+                </a>
+                <a href="/Database" class="nav_link">
+                    <i class='bx bx-data nav_icon'></i>
+                    <span class="nav_name"><strong>Database</strong></span>
+                </a>
+                <a href="/Logs" class="nav_link">
+                    <i class='bx bx-book nav_icon'></i>
+                    <span class="nav_name"><strong>Logs</strong></span>
+                </a>
+                <a href="/Settings" class="nav_link">
+                    <i class='bx bx-cog nav_icon'></i>
+                    <span class="nav_name"><strong>Settings</strong></span>
+                </a>
+              </div>
+          </div>
+          <a href="/logout" class="nav_link">
+              <i class='bx bx-log-out nav_icon'></i>
+              <span class="nav_name"><strong>SignOut</strong></span>
+          </a>
+      </nav>
+  </div>
+<br>
+  <div class="height-100">
+    <div class="container">
+        <!-- Breadcrumbs -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="#">Home</a></li>
+                <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+            </ol>
+        </nav>
+
+        <div class="row">
+            <!-- Overview Card -->
+            <div class="col-md-4 mb-3">
+                <div class="card card-elegant">
+                    <div class="card-body">
+                        <h5 class="card-title">Overview</h5>
+                        <i class='bx bx-bar-chart-square bx-lg mb-3'></i>
+                        <p class="card-text">Here is an overview of the main statistics.</p>
+                        <ul class="list-unstyled">
+                            <li><strong>Users:</strong> 150</li>
+                            <li><strong>Sessions:</strong> 300</li>
+                            <li><strong>Revenue:</strong> $5000</li>
+                        </ul>
+                        <a href="#" class="btn btn-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity Card -->
+            <div class="col-md-4 mb-3">
+                <div class="card card-elegant">
+                    <div class="card-body">
+                        <h5 class="card-title">Recent Activity</h5>
+                        <i class='bx bx-calendar bx-lg mb-3'></i>
+                        <p class="card-text">Check out the latest activities on your account.</p>
+                        <ul class="list-unstyled">
+                            <li>Login from IP: 192.168.0.1</li>
+                            <li>File uploaded: report.pdf</li>
+                            <li>Password changed</li>
+                        </ul>
+                        <a href="#" class="btn btn-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Card -->
+            <div class="col-md-4 mb-3">
+                <div class="card card-elegant">
+                    <div class="card-body">
+                        <h5 class="card-title">Performance</h5>
+                        <i class='bx bx-line-chart bx-lg mb-3'></i>
+                        <p class="card-text">Monitor your performance metrics here.</p>
+                        <ul class="list-unstyled">
+                            <li><strong>Page Views:</strong> 2000</li>
+                            <li><strong>Clicks:</strong> 1500</li>
+                            <li><strong>CTR:</strong> 75%</li>
+                        </ul>
+                        <a href="#" class="btn btn-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Card -->
+            <div class="col-md-4 mb-3">
+                <div class="card card-elegant">
+                    <div class="card-body">
+                        <h5 class="card-title">Users</h5>
+                        <i class='bx bx-user bx-lg mb-3'></i>
+                        <p class="card-text">Manage and view users of your system.</p>
+                        <ul class="list-unstyled">
+                            <li><strong>Active Users:</strong> 120</li>
+                            <li><strong>Pending Requests:</strong> 5</li>
+                            <li><strong>Admins:</strong> 3</li>
+                        </ul>
+                        <a href="#" class="btn btn-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Card -->
+            <div class="col-md-4 mb-3">
+                <div class="card card-elegant">
+                    <div class="card-body">
+                        <h5 class="card-title">Settings</h5>
+                        <i class='bx bx-cog bx-lg mb-3'></i>
+                        <p class="card-text">Configure your system settings here.</p>
+                        <ul class="list-unstyled">
+                            <li><strong>Theme:</strong> Dark</li>
+                            <li><strong>Notifications:</strong> Enabled</li>
+                            <li><strong>Auto-Backup:</strong> Weekly</li>
+                        </ul>
+                        <a href="#" class="btn btn-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<br>
+<footer class="footer mt-auto py-3 frosted-div">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6">
+          <span class="text-muted"><strong>&copy; 2024 IncognitoVault. All rights reserved.</strong></span>
+        </div>
+      </div>
+    </div>
+</footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous"></script>
+  <script src="{{ url_for('static', filename='JS/alive.js') }}"></script>
+  <script src="{{ url_for('static', filename='JS/dashboard.js') }}"></script>
+
+</body>
+</html>
