@@ -228,12 +228,9 @@ def index():
 def signup_route():
     signup_form = SignupForm()
     login_honeypots = session.get('login_honeypots', {})
-    signup_honeypots = session.get('signup_honeypots', {})
+    signup_honeypots = session.get('signup_honeypots', {}) 
     captcha_answer = session.get('captcha_answer')
     user_captcha_answer = request.form.get('captcha')
-    for honeypot_name, expected_value in signup_honeypots.items():
-        if request.form.get(honeypot_name) != expected_value:
-            return render_template('auth.html', signup_error='Invalid honeypot value detected.', login_error=None, login_form=LoginForm(), signup_form=signup_form,captcha_question=captcha_answer)
     if signup_form.validate_on_submit() and validate_captcha(int(user_captcha_answer) if user_captcha_answer else None, captcha_answer):
         name = signup_form.name.data
         email = signup_form.email.data
@@ -250,7 +247,7 @@ def signup_route():
             return render_template('auth.html', signup_error='Signup failed. Please try again.', login_error=None, login_form=LoginForm(), signup_form=signup_form, captcha_question=captcha_question, signup_honeypots=signup_honeypots, login_honeypots=login_honeypots)
     captcha_question, captcha_answer = generate_captcha()
     session['captcha_answer'] = captcha_answer
-    return render_template('auth.html', signup_error='Invalid CAPTCHA', login_error=None, login_form=LoginForm(), signup_form=SignupForm(), captcha_question=captcha_question, signup_honeypots=signup_honeypots, login_honeypots=login_honeypots)
+    return render_template('auth.html', signup_error='Invalid CAPTCHA', login_error=None, login_form=LoginForm(), signup_form=SignupForm(), captcha_question=captcha_question, signup_honeypots=signup_honeypots, login_honeypots=login_honeypots,)
 
 @app.route('/login', methods=['POST', 'GET'])
 @limiter.limit(dynamic_rate_limit)
@@ -300,7 +297,7 @@ def login_route():
 
 @app.route('/Dashboard') 
 @session_expiry
-@limiter.limit(user_rate_limit)
+@limiter.limit(dynamic_rate_limit)
 def dashboard():
     if 'user' in session:
         user = session['user']
@@ -311,25 +308,25 @@ def dashboard():
 
 @app.route('/Form')
 @session_expiry
-@limiter.limit(user_rate_limit)
+@limiter.limit(dynamic_rate_limit)
 def form():
     return render_template('App/form.html')
 
 @app.route('/Database')
 @session_expiry
-@limiter.limit(user_rate_limit)
+@limiter.limit(dynamic_rate_limit)
 def database():
     return render_template('App/database.html')
 
 @app.route('/Logs')
 @session_expiry
-@limiter.limit(user_rate_limit)
+@limiter.limit(dynamic_rate_limit)
 def logs():
     return render_template('App/Logs.html')
 
 @app.route('/Settings')
 @session_expiry
-@limiter.limit(user_rate_limit)
+@limiter.limit(dynamic_rate_limit)
 def settings():
     return render_template('App/settings.html')
 
@@ -381,4 +378,4 @@ def csrf_error(e):
     return render_template('Error-Page/500-Internal-Server-Error.html', user_ip=user_ip), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=880)
+    app.run(debug=True, host='0.0.0.0', port=8800)
