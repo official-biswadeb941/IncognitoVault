@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="icon" type="image/x-icon" href="/static/Pictures/lock.ico">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="csrf-token" content="IjE0MTIwNDNmNDg5MzRlMjU3ZTgyOTgxZWQzMThmYmJjZDE3NGNlNDEi.ZtTBlw.-jhg7eq-YvJNxAqtoeKS2GieFNk">
+  <meta name="app-id" content="IncognitoVault-7IGl7tL2">
+  <meta name="organization" content="IncognitoVault - Secure Personal Space Solutions">
+  <meta name="description" content="IncognitoVault provides secure and private digital spaces for personal and professional use.">
+  <meta name="author" content="ParseSphere Innovations">
+  <title>IncognitoVault - Access Page</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      color: #fff;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      margin: 0;
+      position: relative;
+    }
+
+    h4{
+      font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+      font-weight: bold;
+      font-size:35px;
+    }
+
+    label{
+      font-weight: bold;
+    }
+
+    .background-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('https://www.transparenttextures.com/patterns/asfalt-dark.png');
+      opacity: 0.05;
+      z-index: 1;
+    }
+
+    .access-container {
+      position: relative;
+      z-index: 2;
+      width: 90%;
+      max-width: 400px;
+    }
+
+    .access-form {
+      padding: 30px;
+      background-color: rgba(25, 25, 50, 0.85);
+      border-radius: 10px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .access-header {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 25px;
+    }
+
+    .access-header i {
+      font-size: 50px;
+      color: #e94560;
+    }
+
+    .form-control {
+      background-color: #1b1b32;
+      border: none;
+      color: #fff;
+      font-weight: bold;
+    }
+
+    .form-control:focus {
+      background-color: #1b1b32;
+      color: #fff;
+      box-shadow: none;
+      border-color: #e94560;
+    }
+
+    .btn-primary {
+      background-color: #e94560;
+      border-color: #e94560;
+    }
+
+    .btn-primary:hover {
+      background-color: #ff4b5c;
+      border-color: #ff4b5c;
+    }
+
+    .form-group label {
+      color: #ddd;
+    }
+
+    .form-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+      user-select: none;
+      opacity: 0.1;
+      background-image: repeating-linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.1) 0px,
+        rgba(255, 255, 255, 0.1) 20px,
+        transparent 20px,
+        transparent 40px
+      );
+      background-size: 100px 100px;
+      color: rgba(255, 255, 255, 0.1);
+      font-size: 100px;
+      font-weight: bold;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    @media (max-width: 768px) {
+      .access-header i {
+        font-size: 25px;
+      }
+      .access-form {
+        padding: 20px;
+      }
+      .form-control {
+        font-size: 14px;
+      }
+      .btn-primary {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="form-bg"></div>
+  <div class="background-overlay"></div>
+  <div class="container access-container">
+    <div class="access-form">
+      <div class="access-header">
+        <i class="fas fa-key"></i>
+        <h4 class="mt-2">IncognitoVault</h4>
+        <p class="text-muted">Access Code</p>
+      </div>
+      <form action="/access" method="POST" enctype="multipart/form-data">
+        <!-- Access Code Field -->
+        <div class="form-group">
+          <label for="accessCode">Access Code</label>
+          <input type="text" class="form-control" id="accessCode" placeholder="Enter your access code" autocomplete="off">
+          {% for honeypot_name, honeypot_value in access_honeypots.items() if 'accessCode' in honeypot_name %}<input type="hidden" name="{{ honeypot_name }}" value="{{ honeypot_value }}">{% endfor %}
+        </div>
+        <!-- Captcha Field -->
+        <div class="form-group">
+          <label for="captcha">Captcha</label>
+          <input type="text" class="form-control" id="captcha" placeholder="Enter the captcha shown above" autocomplete="off">
+          {% for honeypot_name, honeypot_value in access_honeypots.items() if 'captcha' in honeypot_name %}<input type="hidden" name="{{ honeypot_name }}" value="{{ honeypot_value }}">{% endfor %}
+        </div>
+        <!-- Submit Button -->
+        <input type="submit" value="Access" class="btn btn-primary btn-block">
+      </form>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS, Popper.js, and jQuery -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
+</body>
+</html>

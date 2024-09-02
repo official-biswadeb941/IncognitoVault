@@ -212,59 +212,24 @@ def signup(name, email, password):
 @app.route('/')
 def index():
     login_form = LoginForm()
-    signup_form = SignupForm()
     captcha_question, captcha_answer = generate_captcha()
-    signup_fields = ['signup_username', 'signup_email', 'signup_password', 'signup_captcha']
-    login_fields = ['login_username', 'login_password', 'login_captcha']
-    signup_honeypots = generate_honeypot_fields_for_fields(signup_fields, length=16)
+    login_fields = ['userType','login_username', 'login_password', 'login_captcha']
     login_honeypots = generate_honeypot_fields_for_fields(login_fields, length=16)
-    session['signup_honeypots'] = signup_honeypots
     session['login_honeypots'] = login_honeypots
     session['captcha_answer'] = captcha_answer
-    return render_template('auth.html', login_form=login_form, signup_form=signup_form, captcha_question=captcha_question, signup_honeypots=signup_honeypots, login_honeypots=login_honeypots, app_id=app_id)
-
-@app.route('/signup', methods=['POST', 'GET'])
-@limiter.limit(dynamic_rate_limit)
-def signup_route():
-    signup_form = SignupForm()
-    login_honeypots = session.get('login_honeypots', {})
-    signup_honeypots = session.get('signup_honeypots', {}) 
-    captcha_answer = session.get('captcha_answer')
-    user_captcha_answer = request.form.get('captcha')
-    if signup_form.validate_on_submit() and validate_captcha(int(user_captcha_answer) if user_captcha_answer else None, captcha_answer):
-        name = signup_form.name.data
-        email = signup_form.email.data
-        password = signup_form.password.data
-        if user_exists(name, email):
-            captcha_question, captcha_answer = generate_captcha()
-            session['captcha_answer'] = captcha_answer
-            return render_template('auth.html', signup_error='User with provided details already exists', login_error=None, login_form=LoginForm(), signup_form=signup_form, captcha_question=captcha_question, signup_honeypots=signup_honeypots, login_honeypots=login_honeypots)
-        if signup(name, email, password):
-            return redirect('/login')
-        else:
-            captcha_question, captcha_answer = generate_captcha()
-            session['captcha_answer'] = captcha_answer
-            return render_template('auth.html', signup_error='Signup failed. Please try again.', login_error=None, login_form=LoginForm(), signup_form=signup_form, captcha_question=captcha_question, signup_honeypots=signup_honeypots, login_honeypots=login_honeypots)
-    captcha_question, captcha_answer = generate_captcha()
-    session['captcha_answer'] = captcha_answer
-    return render_template('auth.html', signup_error='Invalid CAPTCHA', login_error=None, login_form=LoginForm(), signup_form=SignupForm(), captcha_question=captcha_question, signup_honeypots=signup_honeypots, login_honeypots=login_honeypots,)
+    return render_template('login.html', login_form=login_form, captcha_question=captcha_question, login_honeypots=login_honeypots, app_id=app_id)
 
 @app.route('/login', methods=['POST', 'GET'])
 @limiter.limit(dynamic_rate_limit)
 def login_route():
     login_form = LoginForm()
     login_honeypots = session.get('login_honeypots', {})
-    signup_honeypots = session.get('signup_honeypots', {})  # Ensure this variable is always defined
     captcha_answer = session.get('captcha_answer')
     user_captcha_answer = request.form.get('captcha')
-
-    # Check honeypots
     for honeypot_name, expected_value in login_honeypots.items():
         if request.form.get(honeypot_name) != expected_value:
-            return render_template('auth.html', login_error='Invalid honeypot value detected.', 
-                                   signup_error=None, login_form=login_form, 
-                                   signup_form=SignupForm(), captcha_question=captcha_answer, 
-                                   signup_honeypots=signup_honeypots, login_honeypots=login_honeypots)
+            return render_template('login.html', login_error='Invalid honeypot value detected.', 
+                                    login_form=login_form, captcha_question=captcha_answer, login_honeypots=login_honeypots)
 
     if login_form.validate_on_submit() and validate_captcha(int(user_captcha_answer) if user_captcha_answer else None, captcha_answer):
         name = login_form.name.data
@@ -283,17 +248,11 @@ def login_route():
         else:
             captcha_question, captcha_answer = generate_captcha()
             session['captcha_answer'] = captcha_answer
-            return render_template('auth.html', login_error='Invalid credentials', 
-                                   signup_error=None, login_form=login_form, 
-                                   signup_form=SignupForm(), captcha_question=captcha_question, 
-                                   signup_honeypots=signup_honeypots, login_honeypots=login_honeypots)
+            return render_template('login.html', login_error='Invalid credentials', login_form=login_form, captcha_question=captcha_question, login_honeypots=login_honeypots)
 
     captcha_question, captcha_answer = generate_captcha()
     session['captcha_answer'] = captcha_answer
-    return render_template('auth.html', login_error='Invalid CAPTCHA', 
-                           signup_error=None, login_form=login_form, 
-                           signup_form=SignupForm(), captcha_question=captcha_question, 
-                           signup_honeypots=signup_honeypots, login_honeypots=login_honeypots)
+    return render_template('login.html', login_error='Invalid CAPTCHA', login_form=login_form, captcha_question=captcha_question, login_honeypots=login_honeypots)
 
 @app.route('/Dashboard') 
 @session_expiry

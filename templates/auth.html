@@ -27,34 +27,7 @@
     <div class="container">
         <div class="forms-container">
             <div class="signin-signup">
-                <form action="/signup" method="POST" class="sign-up-form" enctype="multipart/form-data">
-                    <h2 class="title">Sign Up</h2>
-                    <div class="input-field">
-                        <i class="fas fa-user"></i>
-                        <input type="text" placeholder="Username" name="name" autocomplete="off" required>
-                        {% for honeypot_name, honeypot_value in signup_honeypots.items() if 'username' in honeypot_name %}<input type="hidden" name="{{ honeypot_name }}" value="{{ honeypot_value }}">{% endfor %}
-                    </div>
-                    <div class="input-field">
-                        <i class="fas fa-envelope"></i>
-                        <input type="email" placeholder="Email" name="email"autocomplete="off" required>
-                        {% for honeypot_name, honeypot_value in signup_honeypots.items() if 'email' in honeypot_name %}<input type="hidden" name="{{ honeypot_name }}" value="{{ honeypot_value }}">{% endfor %}
-                    </div>
-                    <div class="input-field">
-                        <i class="fas fa-lock"></i>
-                        <input type="password" placeholder="Password" name="password" autocomplete="off" required>
-                        {% for honeypot_name, honeypot_value in signup_honeypots.items() if 'password' in honeypot_name %}<input type="hidden" name="{{ honeypot_name }}" value="{{ honeypot_value }}">{% endfor %}
-                    </div>
-                    <p style="text-align: left; color: white; font-size: 20px;">Solve this: {{ captcha_question }}</p>
-                    <div class="input-field">
-                        <i class="fas fa-robot"></i>
-                        {% for honeypot_name, honeypot_value in signup_honeypots.items() if 'captcha' in honeypot_name %}<input type="hidden" name="{{ honeypot_name }}" value="{{ honeypot_value }}">{% endfor %}
-                        <input type="captcha" placeholder="Captcha" name="captcha" autocomplete="off" required>
-                    </div>
-                    <input type="submit" value="Sign Up" class="btn solid">
-                    <br>
-                    {% if signup_error %}<div class="error-message">{{ signup_error }}</div>{% endif %}
-                    <br>
-                </form>
+
                 <form action="/login" method="POST" class="sign-in-form">
                     <h2 class="title">Sign In</h2>
                     <div class="input-field">
