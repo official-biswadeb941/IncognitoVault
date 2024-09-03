@@ -8,7 +8,8 @@ from modules.form import LoginForm, SignupForm
 from datetime import timedelta, datetime
 from functools import wraps
 from collections import deque
-import random, string, logging, pymysql, json, os, secrets
+import random, string, logging, pymysql, json, os, secrets, base64
+from io import BytesIO
 from modules.captcha import generate_captcha, validate_captcha
 from flask_sslify import SSLify
 from argon2 import PasswordHasher
@@ -212,12 +213,16 @@ def signup(name, email, password):
 @app.route('/')
 def index():
     login_form = LoginForm()
-    captcha_question, captcha_answer = generate_captcha()
+    captcha_image, captcha_answer = generate_captcha()
+    session['captcha_answer'] = captcha_answer
+    buffer = BytesIO()
+    captcha_image.save(buffer, format='PNG')
+    buffer.seek(0)
+    captcha_image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
     login_fields = ['userType','login_username', 'login_password', 'login_captcha']
     login_honeypots = generate_honeypot_fields_for_fields(login_fields, length=16)
     session['login_honeypots'] = login_honeypots
-    session['captcha_answer'] = captcha_answer
-    return render_template('login.html', login_form=login_form, captcha_question=captcha_question, login_honeypots=login_honeypots, app_id=app_id)
+    return render_template('auth.html', login_form=login_form, captcha_image_base64=captcha_image_base64, login_honeypots=login_honeypots, app_id=app_id)
 
 @app.route('/login', methods=['POST', 'GET'])
 @limiter.limit(dynamic_rate_limit)
@@ -226,10 +231,10 @@ def login_route():
     login_honeypots = session.get('login_honeypots', {})
     captcha_answer = session.get('captcha_answer')
     user_captcha_answer = request.form.get('captcha')
+
     for honeypot_name, expected_value in login_honeypots.items():
         if request.form.get(honeypot_name) != expected_value:
-            return render_template('login.html', login_error='Invalid honeypot value detected.', 
-                                    login_form=login_form, captcha_question=captcha_answer, login_honeypots=login_honeypots)
+            return render_template('auth.html', login_error='Invalid honeypot value detected.', login_form=login_form, captcha_image_base64=session.get('captcha_image_base64'),login_honeypots=login_honeypots)
 
     if login_form.validate_on_submit() and validate_captcha(int(user_captcha_answer) if user_captcha_answer else None, captcha_answer):
         name = login_form.name.data
@@ -246,13 +251,26 @@ def login_route():
             response.set_cookie('session', 'new', max_age=SESSION_TIMEOUT, httponly=True, secure=True, samesite='Lax')
             return response
         else:
-            captcha_question, captcha_answer = generate_captcha()
+            # Regenerate CAPTCHA for retry
+            captcha_image, captcha_answer = generate_captcha()
+            buffer = BytesIO()
+            captcha_image.save(buffer, format='PNG')
+            buffer.seek(0)
+            captcha_image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
             session['captcha_answer'] = captcha_answer
-            return render_template('login.html', login_error='Invalid credentials', login_form=login_form, captcha_question=captcha_question, login_honeypots=login_honeypots)
+            session['captcha_image_base64'] = captcha_image_base64
+            return render_template('auth.html', login_error='Invalid credentials', login_form=login_form, captcha_image_base64=captcha_image_base64, login_honeypots=login_honeypots)
 
-    captcha_question, captcha_answer = generate_captcha()
+    # Handle CAPTCHA failure
+    captcha_image, captcha_answer = generate_captcha()
+    buffer = BytesIO()
+    captcha_image.save(buffer, format='PNG')
+    buffer.seek(0)
+    captcha_image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
     session['captcha_answer'] = captcha_answer
-    return render_template('login.html', login_error='Invalid CAPTCHA', login_form=login_form, captcha_question=captcha_question, login_honeypots=login_honeypots)
+    session['captcha_image_base64'] = captcha_image_base64
+
+    return render_template('auth.html', login_error='Invalid CAPTCHA', login_form=login_form, captcha_image_base64=captcha_image_base64, login_honeypots=login_honeypots)
 
 @app.route('/Dashboard') 
 @session_expiry

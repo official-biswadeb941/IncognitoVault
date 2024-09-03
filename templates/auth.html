@@ -1,83 +1,101 @@
+<!-- 
+  Theme: Incognito Dark
+  Description: A sleek, secure, and modern theme designed to show a secure interface, emphasizing privacy and a dark aesthetic. Features a linear gradient background with deep blues and purples, complemented by a golden preloader for a luxurious touch.
+  Author: ParseSphere Innovations
+  Version: 1.0
+  Created: September 2024
+  Usage: Suitable for applications focusing on secure user authentication and privacy.
+  License: For use by IncognitoVault - Secure Personal Space Solutions
+  Background Color: linear-gradient(135deg, #0f0c29, #302b63, #24243e)
+-->
+
+
+
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='Pictures/lock.ico') }}">
-    <meta name="robots" content="noindex, nofollow">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="app-id" content="{{app_id}}">
-    <meta name="organization" content="IncognitoVault - Secure Personal Space Solutions">
-    <meta name="description" content="IncognitoVault provides secure and private digital spaces for personal and professional use.">
-    <meta name="author" content="ParseSphere Innovations">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" integrity="sha512-HK5fgLBL+xu6dm/Ii3z4xhlSUyZgTT9tuc/hSrtw6uzJOvgRr2a9jyxxT1ely+B+xFAmJKVSTbpM/CuL7qxO8w==" crossorigin="anonymous">
-    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/auth.css') }}">
-    <title>IncognitoVault - The Personal Space</title>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0id2hpdGUiIGNsYXNzPSJiaSBiaS1sb2NrLWZpbGwiIHZpZXdCb3g9IjAgMCAxNiAxNiI+PHBhdGggZD0iTTggMWEyIDIgMCAwIDEgMiAydjRINlYzYTIgMiAwIDAgMSAyLTJtMyA2VjNhMyAzIDAgMCAwLTYgMHY0YTIgMiAwIDAgMC0yIDJ2NWEyIDIgMCAwIDAgMiAyaDZhMiAyIDAgMCAwIDItMlY5YTIgMiAwIDAgMC0yLTJ6Ii8+PC9zdmc+" type="image/svg+xml">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <meta name="app-id" content="{{app_id}}">
+  <meta name="organization" content="IncognitoVault - Secure Personal Space Solutions">
+  <meta name="description" content="IncognitoVault provides secure and private digital spaces for personal and professional use.">
+  <meta name="author" content="ParseSphere Innovations">
+  <title>IncognitoVault - The Personal Space</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='CSS/auth.css') }}">
 </head>
-
 <body>
 
-    <div id="loader" class="loader">
-        <div class="spinner"></div>
-        <h2>Fetching your data, please wait...</h2>
+  <div class="preloader">
+    <div class="preloader-content">
+      <div class="preloader-icon">
+        <!-- You can add a shield icon here or use an SVG directly -->
+        <svg width="50" height="50" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 2.25L4.5 6.75v6.75c0 3.15 1.77 6.28 4.5 7.64 2.73-1.36 4.5-4.49 4.5-7.64V6.75L12 2.25z"/>
+        </svg>
+      </div>
+      <div class="preloader-text">Securing Your Space...</div>
     </div>
-
-    <div class="container">
-        <div class="forms-container">
-            <div class="signin-signup">
-
-                <form action="/login" method="POST" class="sign-in-form">
-                    <h2 class="title">Sign In</h2>
-                    <div class="input-field">
-                        <i class="fas fa-user"></i>
-                        <input type="text" placeholder="Username" name="name" autocomplete="off" required>
-                        {% for honeypot_name, honeypot_value in login_honeypots.items() if 'username' in honeypot_name %}<input type="hidden" name="{{ honeypot_name }}" value="{{ honeypot_value }}">{% endfor %}
-                    </div>
-                    <div class="input-field">
-                        <i class="fas fa-lock"></i>
-                        <input type="password" placeholder="Password" name="password" autocomplete="off" required>
-                        {% for honeypot_name, honeypot_value in login_honeypots.items() if 'password' in honeypot_name %}<input type="hidden" name="{{ honeypot_name }}" value="{{ honeypot_value }}">{% endfor %}
-                    </div>
-                    <p style="color: white; font-size: 20px;">Solve this: {{ captcha_question }}</p>
-                    <div class="input-field">
-                        <i class="fas fa-robot"></i>
-                        <input type="captcha" placeholder="Captcha" name="captcha" autocomplete="off" required>
-                        {% for honeypot_name, honeypot_value in login_honeypots.items() if 'captcha' in honeypot_name %}<input type="hidden" name="{{ honeypot_name }}" value="{{ honeypot_value }}">{% endfor %}
-                    </div>
-                    <input type="submit" value="Login" class="btn solid"><br>
-                    {% if login_error %}<div class="error-message">{{ login_error }}</div>{% endif %}
-                </form>
-            </div>
+  </div>
+  
+  
+  <div class="form-bg"></div>
+  <div class="background-overlay"></div>
+  <div class="container login-container">
+    <div class="login-form">
+      <div class="login-header">
+        <i class="fas fa-lock"></i>
+        <h4 class="mt-2">IncognitoVault</h4>
+        <p class="text-muted">Secure Login</p>
+      </div>
+      <form action="/login" method="POST" id="loginForm">
+        <div class="form-group">
+          <label for="role">User Role</label>
+          <select name="role" class="form-control" id="role">
+            <option value="" disabled selected>Select your role</option>
+            <option value="super_admin">Super Admin</option>
+            <option value="admin">Admin</option>
+            <option value="user">User</option>
+            {% for honeypot_name, honeypot_value in login_honeypots.items() if 'userType' in honeypot_name %}<input type="hidden" name="{{ honeypot_name }}" value="{{ honeypot_value }}">{% endfor %}
+          </select>
         </div>
-        <div class="panels-container">
-            <div class="panel left-panel">
-                <div class="content">
-                    <h3>New here?</h3>
-                    <p>What are you waiting for? Join thousands of others in collaborating in a fun way!</p>
-                    <button class="btn transparent" id="sign-up-btn">Sign up</button>
-                   </div>
-                <img src="{{ url_for('static', filename='Pictures/1.png') }}" class="image" alt="">
-            </div>
-            <div class="panel right-panel">
-                <div class="content">
-                    <h3>Already a member?</h3>
-                    <p>Hurry Up! There are messages waiting for you.</p>
-                    <button class="btn transparent" id="sign-in-btn">Sign in</button>
-                    </div>
-                <img src="{{ url_for('static', filename='Pictures/5.png') }}" class="image" alt="">
-            </div>
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" class="form-control" placeholder="Enter your username" name="name" autocomplete="off">
+          {% for honeypot_name, honeypot_value in login_honeypots.items() if 'username' in honeypot_name %}<input type="hidden" name="{{ honeypot_name }}" value="{{ honeypot_value }}">{% endfor %}
         </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" class="form-control" placeholder="Enter your password" name="password" autocomplete="off">
+          {% for honeypot_name, honeypot_value in login_honeypots.items() if 'password' in honeypot_name %}<input type="hidden" name="{{ honeypot_name }}" value="{{ honeypot_value }}">{% endfor %}
+        </div>
+        <div class="captcha">
+          <label for="captcha">Solve the given Captcha</label>
+          <br>
+          <img src="data:image/png;base64,{{ captcha_image_base64 }}" alt="CAPTCHA">
+       </div>
+       <br>
+        <div class="form-group">
+          <input type="text" class="form-control" placeholder="Enter the captcha shown above" name="captcha" autocomplete="off">
+          {% for honeypot_name, honeypot_value in login_honeypots.items() if 'captcha' in honeypot_name %}<input type="hidden" name="{{ honeypot_name }}" value="{{ honeypot_value }}">{% endfor %}
+        </div>
+        <input type="submit" value="Login" class="btn btn-primary btn-block" id="loginButton" >
+        <br>                    
+        {% if login_error %}<div class="error-message">{{ login_error }}</div>{% endif %}
+      </form>
     </div>
-
-    
-    <script src="{{ url_for('static', filename='JS/auth.js') }}"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/feather-icons" integrity="sha512-zMm7+ZQ8AZr1r3W8Z8lDATkH05QG5Gm2xc6MlsCdBz9l6oE8Y7IXByMgSm/rdRQrhuHt99HAYfMljBOEZ68q5A==" crossorigin="anonymous"></script>
-    <script>
-        feather.replace();
-    </script>
-
+  </div>
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
+  <script src="{{ url_for('static', filename='JS/auth.js') }}"></script>
+  
 </body>
 </html>

@@ -134,7 +134,12 @@ body {
     }
   }
 
-  /* Preloader Styles */
+.captcha img{
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 50%;
+}
   /* Preloader Styles */
   .preloader {
     position: fixed;

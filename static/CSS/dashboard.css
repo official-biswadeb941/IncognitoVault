@@ -24,7 +24,8 @@ body {
     font-family: var(--body-font);
     font-size: var(--normal-font-size);
     background-size: cover;
-    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    /*background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);*/
+    background-image: url(https://images.unsplash.com/photo-1610447158291-d917870bf750?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8NGslMjBmb3Jlc3R8ZW58MHx8MHx8fDA%3D);
     background-position: center;
     transition: .5s;
 }
@@ -410,11 +411,41 @@ i {
     color: white !important;
 }
 
+.footer {
+    position: fixed;
+    bottom: 0;
+    width: 1290px;
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    color: #ffffff;
+    padding: 10px;
+    box-sizing: border-box;
+    z-index: 1000;
+    overflow-x: hidden; /* Prevents horizontal overflow */
+}
+.footer .text-muted {
+    margin: 0;
+}
+.footer .container {
+    display: flex;
+    width: 100%;
+}
+.footer .col-md-12 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.footer #date-time {
+    font-size: 0.9rem; /* Adjust font size if needed */
+    float: right;
+    margin-left: 700px;
+    font-weight: bolder;
+}
+
 @media screen and (min-width: 768px) {
     body {
         margin: calc(var(--header-height) + 1rem) 0 0 0;
         padding-left: calc(var(--nav-width) + 2rem);
-        background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+        background-image: url(https://images.unsplash.com/photo-1610447158291-d917870bf750?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8NGslMjBmb3Jlc3R8ZW58MHx8MHx8fDA%3D);
     }
 
     .header {

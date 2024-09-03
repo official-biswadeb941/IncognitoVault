@@ -131,3 +131,13 @@ document.addEventListener('DOMContentLoaded', function () {
       }
   });
 });
+
+function updateDateTime() {
+    const now = new Date();
+    const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'Asia/Kolkata' };
+    const dateTime = now.toLocaleString('en-IN', options);
+    document.getElementById('date-time').textContent = dateTime;
+}
+
+updateDateTime();
+setInterval(updateDateTime, 1000); // Update date and time every second
