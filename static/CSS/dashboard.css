@@ -43,7 +43,7 @@ a {
     align-items: center;
     justify-content: space-between;
     padding: 0 1rem;
-    background: rgba(255, 255, 255, 0.3); /* Semi-transparent background */
+    background: linear-gradient(135deg, #0f0c29, #0e0c1d, #24243e);
     border-radius: 10px; /* Optional: Rounded corners */
     z-index: var(--z-fixed);
     transition: .5s;
@@ -74,7 +74,7 @@ a {
     left: -30%;
     width: var(--nav-width);
     height: 100vh;
-    background: rgba(255, 255, 255, 0.3); /* Semi-transparent background */
+    background: linear-gradient(135deg, #0f0c29, #0e0c1d, #24243e);
     backdrop-filter: blur(30px); /* Blur effect */
     -webkit-backdrop-filter: blur(30px); /* For Safari */
     padding: .5rem 1rem 0 0;
@@ -127,7 +127,6 @@ a {
 
 .nav_icon {
     font-size: 1.25rem;
-    background-color: #1f1b41;
 }
 
 .show {
@@ -139,9 +138,8 @@ a {
 }
 
 .active {
-    color: #555;
-    width: 1px;
-    background-color: violet;
+    background-color: #0056b3;
+    color: #240752;
 }
 
 .active::before {
@@ -155,22 +153,21 @@ a {
 
 .height-100 {
     height: auto;
-    background: rgba(255, 255, 255, 0.3); /* Semi-transparent background */
-    backdrop-filter: blur(30px); /* Blur effect */
-    -webkit-backdrop-filter: blur(25px); /* For Safari */
+    background: linear-gradient(135deg, #09071a, #211e44, #161625);
+    backdrop-filter: blur(20px); /* Blur effect */
+    -webkit-backdrop-filter: blur(20px); /* For Safari */
     border-radius: 10px; /* Optional: Rounded corners */
     padding: 2rem;
-    color: #333; /* Text color to ensure readability */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: Add a subtle shadow */
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.39); /* Optional: Add a subtle shadow */
 }
 
 /* Base card styling */
 .card-elegant {
     border: none;
     border-radius: 15px; /* Rounded corners */
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Deep shadow for elegance */
+    box-shadow: 0 8px 16px rgba(5, 31, 71, 0.349); /* Deep shadow for elegance */
     overflow: hidden; /* Ensure the shadow and rounded corners work well */
-    background: rgba(255, 255, 255, 0.2); /* Transparent white background */
+    background: rgba(2, 31, 92, 0.459); /* Transparent white background */
     backdrop-filter: blur(25px); /* Frosted glass effect */
     -webkit-backdrop-filter: blur(25px); /* For Safari */
     transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transitions */
@@ -194,7 +191,14 @@ a {
 }
 
 .card-text {
-    color: #555; /* Subtle text color */
+    color: #ffffff; /* Subtle text color */
+    font-family: Georgia;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+i {
+    color: white;
 }
 
 .btn-primary {
@@ -207,16 +211,6 @@ a {
 
 .btn-primary:hover {
     background-color: #3c1c9b; /* Slightly darker shade on hover */
-}
-
-.breadcrumb {
-    background: rgba(255, 255, 255, 0.3); /* Semi-transparent background */
-    backdrop-filter: blur(30px); /* Blur effect */
-    -webkit-backdrop-filter: blur(30px); /* For Safari */
-    border-radius: 10px; /* Rounded corners */
-    padding: 0.75rem 1.5rem;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Optional: Add a subtle shadow */
 }
 
 .frosted-div{
@@ -327,27 +321,34 @@ a {
 }
 
 .table-hover tbody tr:hover {
-    background-color: #f8f9fa;
+    color: white;
+    background-color: #191736;
+}
+
+.table tr{
+    color: white;
 }
 
 /*Settings*/
 .card {
-    background: rgba(255, 255, 255, 0.274);
-    backdrop-filter: blur(20px);
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    backdrop-filter: blur(10px);
     border-radius: 15px;
     padding: 20px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px; /* Added spacing between cards */
+    color: white;
 }
 
 .form-control {
     border-radius: 10px;
     background: rgba(255, 255, 255, 0.9);
     border: 1px solid #e0e0e0;
+    font-weight: bold;
 }
 
   .form-label {
-    color: #333;
+    color: #ffffff;
 }
 
 .btn-primary {
@@ -395,16 +396,14 @@ a {
 /* Custom styles for the notification card */
 .notification-card-header {
     font-size: 1.25rem;
-    color: #333;
+    color: #ffffff;
     margin-bottom: 10px;
 }
 
 .notification-item {
     padding: 10px;
-    border: 1px solid #e0e0e0;
     border-radius: 5px;
     margin-bottom: 10px;
-    background-color: #f9f9f9;
 }
 
 .text-muted{

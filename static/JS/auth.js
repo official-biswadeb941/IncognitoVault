@@ -46,7 +46,7 @@ document.addEventListener("DOMContentLoaded", function() {
   // Simulate loading for 3 seconds
   setTimeout(() => {
     hidePreloader();
-  }, 3000); // 3000ms = 3 seconds
+  }, 1500); // 3000ms = 3 seconds
 });
 
 
