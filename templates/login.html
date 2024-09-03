@@ -1,12 +1,14 @@
 <!-- 
   Theme: Incognito Dark
-  Description: A sleek, secure, and modern theme designed for login interfaces, emphasizing privacy and a dark aesthetic.
+  Description: A sleek, secure, and modern theme designed to show a secure interface, emphasizing privacy and a dark aesthetic. Features a linear gradient background with deep blues and purples, complemented by a golden preloader for a luxurious touch.
   Author: ParseSphere Innovations
   Version: 1.0
   Created: September 2024
   Usage: Suitable for applications focusing on secure user authentication and privacy.
   License: For use by IncognitoVault - Secure Personal Space Solutions
+  Background Color: linear-gradient(135deg, #0f0c29, #302b63, #24243e)
 -->
+
 
 
 <!DOCTYPE html>
@@ -29,6 +31,20 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='CSS/auth.css') }}">
 </head>
 <body>
+
+  <div class="preloader">
+    <div class="preloader-content">
+      <div class="preloader-icon">
+        <!-- You can add a shield icon here or use an SVG directly -->
+        <svg width="50" height="50" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 2.25L4.5 6.75v6.75c0 3.15 1.77 6.28 4.5 7.64 2.73-1.36 4.5-4.49 4.5-7.64V6.75L12 2.25z"/>
+        </svg>
+      </div>
+      <div class="preloader-text">Securing Your Space...</div>
+    </div>
+  </div>
+  
+  
   <div class="form-bg"></div>
   <div class="background-overlay"></div>
   <div class="container login-container">

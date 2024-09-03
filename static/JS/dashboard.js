@@ -106,3 +106,28 @@ window.onload = function () {
   // Load existing notifications
   loadNotifications();
 };
+
+// JavaScript to handle active class switching based on current URL
+document.addEventListener('DOMContentLoaded', function () {
+  // Get the current pathname (e.g., "/Dashboard", "/Form")
+  const currentPath = window.location.pathname;
+
+  // List of nav links and their corresponding paths
+  const navLinks = [
+      { path: '/Dashboard', elementId: 'dashboard-link' },
+      { path: '/Form', elementId: 'form-link' },
+      { path: '/Database', elementId: 'database-link' },
+      { path: '/Logs', elementId: 'logs-link' },
+      { path: '/Settings', elementId: 'settings-link' },
+  ];
+
+  // Loop through each nav link to find the match and add the 'active' class
+  navLinks.forEach(link => {
+      const navElement = document.getElementById(link.elementId);
+      if (currentPath === link.path) {
+          navElement.classList.add('active');
+      } else {
+          navElement.classList.remove('active');
+      }
+  });
+});
