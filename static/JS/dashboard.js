@@ -133,10 +133,15 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function updateDateTime() {
-    const now = new Date();
-    const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'Asia/Kolkata' };
-    const dateTime = now.toLocaleString('en-IN', options);
-    document.getElementById('date-time').textContent = dateTime;
+  const now = new Date();
+  const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'Asia/Kolkata', hour12: true };
+  const dateOptions = { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Kolkata' };
+
+  const time = now.toLocaleTimeString('en-IN', timeOptions);
+  const date = now.toLocaleDateString('en-IN', dateOptions);
+
+  const dateTime = `${time}, ${date}`;
+  document.getElementById('date-time').textContent = dateTime;
 }
 
 updateDateTime();

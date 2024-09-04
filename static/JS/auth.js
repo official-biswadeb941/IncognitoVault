@@ -48,6 +48,3 @@ document.addEventListener("DOMContentLoaded", function() {
     hidePreloader();
   }, 1500); // 3000ms = 3 seconds
 });
-
-
-
