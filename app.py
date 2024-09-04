@@ -14,6 +14,9 @@ from modules.captcha import generate_captcha, validate_captcha
 from flask_sslify import SSLify
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
+from flask_sqlalchemy import SQLAlchemy
+from flask_session import Session
+
 
 ################### Initialization and Configuration ########################
 app = Flask(__name__)
@@ -24,6 +27,14 @@ app.config['WTF_CSRF_ENABLED'] = True
 csrf = CSRFProtect(app)
 sslify = SSLify(app)
 
+
+# SQLAlchemy configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///session.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
+
+
 limiter = Limiter(
     key_func=get_remote_address,
     app=app,
@@ -33,6 +44,16 @@ SESSION_TIMEOUT = 60
 app.permanent_session_lifetime = timedelta(seconds=SESSION_TIMEOUT)
 request_times = deque()
 window_duration = timedelta(minutes=1)
+
+# Flask-Session configuration
+app.config['SESSION_TYPE'] = 'sqlalchemy'
+app.config['SESSION_SQLALCHEMY'] = db  # Use the same SQLAlchemy instance for sessions
+app.config['SESSION_SQLALCHEMY_TABLE'] = 'sessions'
+app.config['SESSION_PERMANENT'] = False
+app.config['SESSION_USE_SIGNER'] = True
+app.config['SESSION_KEY_PREFIX'] = 'session:'
+
+Session(app)
 
 # Load MySQL configuration from config.json
 with open('Database/DB.json', 'r') as f:
