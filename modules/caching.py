@@ -1,105 +1,67 @@
 import json
+import os
 import redis
-import logging
-import time
-from urllib.parse import urlparse
-from redis.exceptions import RedisError, ConnectionError, TimeoutError
-from apscheduler.schedulers.background import BackgroundScheduler
+from flask_caching import Cache
 
-def load_caching_servers():
-    """Load caching server URLs from a JSON file."""
-    with open('Database/caching.json') as f:
-        data = json.load(f)
-    return list(data.values())
+# Initialize Redis connection
+def get_redis_connection():
+    #print("Initializing Redis connection...")
+    with open('Database/caching.json') as config_file:
+        config_data = json.load(config_file)
+    
+    redis_url_index = int(os.getenv('REDIS_URL_INDEX', 0))
+    redis_urls = config_data.get('redis_urls', [])
+    redis_url = redis_urls[redis_url_index]
+    
+    #print(f"Connecting to Redis at {redis_url}")
+    return redis.from_url(redis_url)
 
-class RoundRobinRedis:
-    """A class to manage Redis connections using round-robin strategy."""
-    def __init__(self, urls):
-        self.urls = urls
-        self.current = 0
-        self.clients = [self._create_client(url) for url in urls]
+# Configure and initialize Flask cache
+def configure_cache(app):
+    print("Configuring Flask cache...")
+    with open('Database/caching.json') as config_file:
+        config_data = json.load(config_file)
 
-    def _create_client(self, url):
-        """Create a Redis client from a URL."""
-        parsed_url = urlparse(url)
-        return redis.StrictRedis(
-            host=parsed_url.hostname,
-            port=parsed_url.port,
-            password=parsed_url.password,
-            ssl=True
-        )
+    redis_url_index = int(os.getenv('REDIS_URL_INDEX', 0))
+    redis_urls = config_data.get('redis_urls', [])
+    
+    if redis_url_index >= len(redis_urls):
+        raise ValueError("Invalid REDIS_URL_INDEX value")
+    
+    redis_url = redis_urls[redis_url_index]
 
-    def _get_client(self):
-        """Return a Redis client using round-robin strategy."""
-        client = self.clients[self.current]
-        self.current = (self.current + 1) % len(self.clients)
-        return client
+    app.config['CACHE_TYPE'] = 'RedisCache'
+    app.config['CACHE_REDIS_URL'] = redis_url
+    app.config['CACHE_DEFAULT_TIMEOUT'] = 300  # Set default timeout (e.g., 5 minutes)
 
-    def __getattr__(self, name):
-        """Delegate attribute access to the current Redis client."""
-        client = self._get_client()
-        return getattr(client, name)
+    cache = Cache(app)
+    #print(f"Cache configured with Redis URL: {redis_url}")
+    return cache
 
-class RobustRoundRobinRedis(RoundRobinRedis):
-    """A subclass of RoundRobinRedis that adds retry, timeout, and connection validation."""
-    def __init__(self, urls, retries=3, timeout=5):
-        super().__init__(urls)
-        self.retries = retries
-        self.timeout = timeout
+# Push data to Redis List with TTL
+def push_data_with_ttl(redis_conn, key, value, timeout, max_length=100):
+    #print(f"Pushing data to Redis list: key={key}, value={value}, timeout={timeout}, max_length={max_length}")
+    redis_conn.lpush(key, value)
+    redis_conn.expire(key, timeout)
+    redis_conn.ltrim(key, 0, max_length - 1)
+    #print(f"Data pushed to list {key} with TTL {timeout} seconds")
 
-    def _get_client(self):
-        """Return a Redis client with retry and timeout configurations."""
-        client = super()._get_client()
-        return redis.StrictRedis(
-            host=client.connection_pool.connection_kwargs['host'],
-            port=client.connection_pool.connection_kwargs['port'],
-            password=client.connection_pool.connection_kwargs.get('password'),
-            ssl=True,
-            socket_timeout=self.timeout,
-            socket_connect_timeout=self.timeout
-        )
+# Pop data from Redis List
+def pop_data(redis_conn, key):
+    #print(f"Popping data from Redis list: key={key}")
+    value = redis_conn.rpop(key)
+    #print(f"Data popped from list {key}: {value}")
+    return value
 
-    def _execute_with_retry(self, func, *args, **kwargs):
-        """Execute a Redis command with retry and exponential backoff on failure."""
-        for attempt in range(self.retries):
-            try:
-                return func(*args, **kwargs)
-            except (RedisError, ConnectionError, TimeoutError) as e:
-                logging.warning(f"Redis operation attempt {attempt + 1} failed: {e}")
-                if attempt == self.retries - 1:
-                    raise
-                # Exponential backoff
-                time.sleep(2 ** attempt)
+# Add this function to get the Redis URI
+def get_redis_uri():
+    with open('Database/caching.json') as config_file:
+        config_data = json.load(config_file)
 
-    def get(self, key):
-        """Get value from Redis with retry."""
-        client = self._get_client()
-        return self._execute_with_retry(client.get, key)
-
-    def set(self, key, value, ex=None):
-        """Set value in Redis with retry."""
-        client = self._get_client()
-        return self._execute_with_retry(client.set, key, value, ex=ex)
-
-    def delete(self, key):
-        """Delete a key from Redis with retry."""
-        client = self._get_client()
-        return self._execute_with_retry(client.delete, key)
-
-    def flush_all(self):
-        """Flush all keys from Redis with retry."""
-        client = self._get_client()
-        return self._execute_with_retry(client.flushall)
-
-# Function to reset caching server once a month
-def reset_caching_server():
-    """Flush all caching servers once a month."""
-    logging.info("Resetting caching servers...")
-    redis_client = RobustRoundRobinRedis(load_caching_servers())
-    redis_client.flush_all()
-    logging.info("Caching servers reset.")
-
-# Schedule the reset task
-scheduler = BackgroundScheduler()
-scheduler.add_job(reset_caching_server, 'cron', day=1, hour=0, minute=0)  # Runs at midnight on the first day of each month
-scheduler.start()
+    redis_url_index = int(os.getenv('REDIS_URL_INDEX', 0))
+    redis_urls = config_data.get('redis_urls', [])
+    
+    if redis_url_index >= len(redis_urls):
+        raise ValueError("Invalid REDIS_URL_INDEX value")
+    
+    return redis_urls[redis_url_index]

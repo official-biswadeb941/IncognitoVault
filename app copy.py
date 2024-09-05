@@ -1,8 +1,6 @@
 from flask import Flask, render_template, redirect, session, request, make_response, jsonify, Response
 from flask_wtf import CSRFProtect
 from flask_limiter import Limiter
-from flask_session import Session 
-from modules.caching import configure_cache, push_data_with_ttl, pop_data, get_redis_connection, get_redis_uri
 from flask_limiter.util import get_remote_address
 from werkzeug.exceptions import TooManyRequests, BadRequest
 from modules.session import session as session_module
@@ -10,12 +8,14 @@ from modules.form import LoginForm, SignupForm
 from datetime import timedelta, datetime
 from functools import wraps
 from collections import deque
-import random, string, logging, pymysql, json, os, secrets, base64, redis
+import random, string, logging, pymysql, json, os, secrets, base64
 from io import BytesIO
 from modules.captcha import generate_captcha, validate_captcha
 from flask_sslify import SSLify
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
+from flask_sqlalchemy import SQLAlchemy
+from flask_session import Session
 
 
 ################### Initialization and Configuration ########################
@@ -24,36 +24,36 @@ app.secret_key = session_module()
 app.config['ENV'] = 'development'
 app.config['WTF_CSRF_ENABLED'] = True
 
-# Initialize Redis and configure caching
-redis_conn = get_redis_connection()
-cache = configure_cache(app)
-redis_uri = get_redis_uri()
-redis_conn = redis.StrictRedis.from_url(redis_uri)
-
-# Configure Flask-Session to use Redis
-app.config['SESSION_TYPE'] = 'redis'
-app.config['SESSION_PERMANENT'] = False
-app.config['SESSION_USE_SIGNER'] = True
-app.config['SESSION_KEY_PREFIX'] = 'session:'
-app.config['SESSION_REDIS'] = redis_conn
-app.config['SEND_FILE_MAX_AGE_DEFAULT'] = timedelta(days=30)
-
-# Initialize Flask-Session
-Session(app)
-
 csrf = CSRFProtect(app)
 sslify = SSLify(app)
 
+MAX_DB_SIZE = 500 * 1024 * 1024 # 1GB in bytes
+
+# SQLAlchemy configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///session.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
+
 limiter = Limiter(
     key_func=get_remote_address,
-    storage_uri=redis_uri,
     app=app,
-   )
+)
 
 SESSION_TIMEOUT = 60
 app.permanent_session_lifetime = timedelta(seconds=SESSION_TIMEOUT)
 request_times = deque()
 window_duration = timedelta(minutes=1)
+
+# Flask-Session configuration
+app.config['SESSION_TYPE'] = 'sqlalchemy'
+app.config['SESSION_SQLALCHEMY'] = db  # Use the same SQLAlchemy instance for sessions
+app.config['SESSION_SQLALCHEMY_TABLE'] = 'sessions'
+app.config['SESSION_PERMANENT'] = False
+app.config['SESSION_USE_SIGNER'] = True
+app.config['SESSION_KEY_PREFIX'] = 'session:'
+
+Session(app)
 
 # Load MySQL configuration from config.json
 with open('Database/DB.json', 'r') as f:
@@ -77,78 +77,21 @@ db = pymysql.connect(
 )
 
 ph = PasswordHasher()
-csrf.init_app(app)
-
-#################### Rate Limiting using Redis ######################
-def record_request_in_redis(user_ip):
-    current_time = datetime.now().timestamp()
-    key = f'rate_limit:{user_ip}'
-    
-    # Push the current time to Redis and trim the list to keep only recent requests
-    redis_conn.lpush(key, current_time)
-    redis_conn.ltrim(key, 0, 2499)  # Keep the last 2500 requests in Redis
-    
-    # Set expiration for this key to automatically remove old data after window_duration
-    redis_conn.expire(key, window_duration.seconds)
-
-def get_request_count(user_ip):
-    key = f'rate_limit:{user_ip}'
-    
-    # Retrieve all timestamps from Redis for the given IP
-    request_times = redis_conn.lrange(key, 0, -1)
-    
-    # Convert Redis list (byte strings) to float timestamps and filter by time window
-    current_time = datetime.now().timestamp()
-    valid_requests = [float(t) for t in request_times if current_time - float(t) <= window_duration.total_seconds()]
-    
-    return len(valid_requests)
-
-def dynamic_rate_limit():
-    user_ip = get_remote_address()
-    
-    # Record the current request in Redis
-    record_request_in_redis(user_ip)
-    
-    # Get the number of requests within the sliding window
-    request_count = get_request_count(user_ip)
-
-    # Define dynamic rate limits based on request count
-    if request_count > 2500:
-        return "5 per minute"
-    elif request_count > 1250:
-        return "10 per minute"
-    elif request_count > 625:
-        return "20 per minute"
-    else:
-        return "60 per minute"
-
-###################### Session Management ######################
-def session_expiry(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        user_id = session.get('user_id', get_remote_address())
-        last_activity = pop_data(redis_conn, f'session:last_activity:{user_id}')
-        current_time = datetime.now()
-
-        if last_activity:
-            # Decode bytes to string if necessary
-            if isinstance(last_activity, bytes):
-                last_activity = last_activity.decode('utf-8')
-            last_activity = datetime.strptime(last_activity, '%Y-%m-%d %H:%M:%S')
-            if (current_time - last_activity).total_seconds() > SESSION_TIMEOUT:
-                session.clear()
-                return redirect('/')
-            else:
-                # Update last activity in Redis
-                push_data_with_ttl(redis_conn, f'session:last_activity:{user_id}', current_time.strftime('%Y-%m-%d %H:%M:%S'), SESSION_TIMEOUT)
-        else:
-            push_data_with_ttl(redis_conn, f'session:last_activity:{user_id}', current_time.strftime('%Y-%m-%d %H:%M:%S'), SESSION_TIMEOUT)
-        
-        return func(*args, **kwargs)
-    return wrapper
-
 
 ####################### Utility Functions #####################
+
+def check_and_delete_db():
+    db_path = os.path.join('instance', 'session.db')
+    if os.path.exists(db_path):
+        db_size = os.path.getsize(db_path)
+        if db_size > MAX_DB_SIZE:
+            print(f"Database size ({db_size} bytes) exceeds 1GB. Deleting database...")
+            os.remove(db_path)
+            print("Database deleted successfully.")
+        else:
+            print(f"Database size is {db_size} bytes. No action needed.")
+    else:
+        print("Database file does not exist.")
 
 def create_table():
     try:
@@ -189,6 +132,23 @@ def generate_app_id():
     random_string = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
     return f"IncognitoVault-{random_string}"
 
+def record_request():
+    current_time = datetime.now()
+    request_times.append(current_time)
+    while request_times and request_times[0] < current_time - window_duration:
+        request_times.popleft()
+
+def dynamic_rate_limit():
+    record_request()
+    request_count = len(request_times)
+    if request_count > 2500:
+        return "5 per minute"  # Strict limit for high traffic
+    elif request_count > 1250:
+        return "10 per minute"  # Moderate limit for medium traffic
+    elif request_count > 625:
+        return "20 per minute"  # Low limit for low traffic
+    else:
+        return "60 per minute"  # Relaxed limit for very low traffic
 
 def user_rate_limit():
     user_id = session.get('user_id', get_remote_address())
@@ -214,26 +174,26 @@ def set_security_headers(response):
 def ensure_https():
     if not request.is_secure and app.config['ENV'] != 'development':
         return redirect(request.url.replace("http://", "https://"))
-    
-@app.before_request
-def load_session():
-    session_id = request.cookies.get('session_id')
-    if session_id:
-        session_data = redis_conn.get(f'session:{session_id}')
-        if session_data:
-            session.update(json.loads(session_data.decode('utf-8')))
-    else:
-        session_id = generate_random_string(32)  # Generate a unique session ID
-        session['session_id'] = session_id
 
-@app.after_request
-def save_session(response: Response):
-    if 'session_id' in session:
-        session_data = json.dumps(dict(session))
-        redis_conn.set(f'session:{session["session_id"]}', session_data)
-        redis_conn.expire(f'session:{session["session_id"]}', SESSION_TIMEOUT)
-    response.set_cookie('session_id', session.get('session_id', ''), max_age=SESSION_TIMEOUT, httponly=True, secure=True, samesite='Lax')
-    return response
+def session_expiry(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        if 'last_activity' in session:
+            last_activity = datetime.strptime(session['last_activity'], '%Y-%m-%d %H:%M:%S')
+            current_time = datetime.now()
+            if (current_time - last_activity).total_seconds() > SESSION_TIMEOUT:
+                session.pop('user', None)
+                session.pop('user_id', None)
+                session.pop('last_activity', None)
+                logging.info(f"Session expired for IP: {get_remote_address()}")
+                session.clear()
+                return redirect('/')
+            else:
+                session['last_activity'] = current_time.strftime('%Y-%m-%d %H:%M:%S')
+        else:
+            session['last_activity'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        return func(*args, **kwargs)
+    return wrapper
 
 #################### Authentication Routes #######################
 def generate_honeypot_fields_for_fields(fields, length=16):
@@ -430,4 +390,5 @@ def csrf_error(e):
     return render_template('Error-Page/500-Internal-Server-Error.html', user_ip=user_ip), 500
 
 if __name__ == '__main__':
+    check_and_delete_db()
     app.run(debug=True, host='0.0.0.0', port=8800)
