@@ -27,13 +27,13 @@ app.config['WTF_CSRF_ENABLED'] = True
 csrf = CSRFProtect(app)
 sslify = SSLify(app)
 
+MAX_DB_SIZE = 500 * 1024 * 1024 # 1GB in bytes
 
 # SQLAlchemy configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///session.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
-
 
 limiter = Limiter(
     key_func=get_remote_address,
@@ -79,6 +79,20 @@ db = pymysql.connect(
 ph = PasswordHasher()
 
 ####################### Utility Functions #####################
+
+def check_and_delete_db():
+    db_path = os.path.join('instance', 'session.db')
+    if os.path.exists(db_path):
+        db_size = os.path.getsize(db_path)
+        if db_size > MAX_DB_SIZE:
+            print(f"Database size ({db_size} bytes) exceeds 1GB. Deleting database...")
+            os.remove(db_path)
+            print("Database deleted successfully.")
+        else:
+            print(f"Database size is {db_size} bytes. No action needed.")
+    else:
+        print("Database file does not exist.")
+
 def create_table():
     try:
         with db.cursor() as cursor:
@@ -376,4 +390,5 @@ def csrf_error(e):
     return render_template('Error-Page/500-Internal-Server-Error.html', user_ip=user_ip), 500
 
 if __name__ == '__main__':
+    check_and_delete_db()
     app.run(debug=True, host='0.0.0.0', port=8800)
