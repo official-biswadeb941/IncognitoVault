@@ -32,19 +32,6 @@
 </head>
 <body>
 
-  <div class="preloader">
-    <div class="preloader-content">
-      <div class="preloader-icon">
-        <!-- You can add a shield icon here or use an SVG directly -->
-        <svg width="50" height="50" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 2.25L4.5 6.75v6.75c0 3.15 1.77 6.28 4.5 7.64 2.73-1.36 4.5-4.49 4.5-7.64V6.75L12 2.25z"/>
-        </svg>
-      </div>
-      <div class="preloader-text">Securing Your Space...</div>
-    </div>
-  </div>
-  
-  
   <div class="form-bg"></div>
   <div class="background-overlay"></div>
   <div class="container login-container">
@@ -54,6 +41,7 @@
         <h4 class="mt-2">IncognitoVault</h4>
         <p class="text-muted">Secure Login</p>
       </div>
+
       <form action="/login" method="POST" id="loginForm">
         <div class="form-group">
           <label for="role">User Role</label>
@@ -85,9 +73,8 @@
           <input type="text" class="form-control" placeholder="Enter the captcha shown above" name="captcha" autocomplete="off">
           {% for honeypot_name, honeypot_value in login_honeypots.items() if 'captcha' in honeypot_name %}<input type="hidden" name="{{ honeypot_name }}" value="{{ honeypot_value }}">{% endfor %}
         </div>
-        <input type="submit" value="Login" class="btn btn-primary btn-block" id="loginButton" >
-        <br>                    
-        {% if login_error %}<div class="error-message">{{ login_error }}</div>{% endif %}
+        <input type="submit" value="Login" class="btn btn-primary btn-block" id="loginButton">
+        <br>{% if login_error %}<div class="error-message">{{ login_error }}</div>{% endif %}
       </form>
     </div>
   </div>

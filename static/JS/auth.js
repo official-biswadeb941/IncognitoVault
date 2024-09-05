@@ -30,21 +30,3 @@ document.addEventListener('DOMContentLoaded', function() {
   });
   checkFields();
 });
-
-
-document.addEventListener("DOMContentLoaded", function() {
-  const preloader = document.querySelector('.preloader');
-  
-  // Function to hide preloader
-  function hidePreloader() {
-    preloader.style.opacity = '0';
-    setTimeout(() => {
-      preloader.style.display = 'none';
-    }, 500); // Match this delay with the opacity transition duration
-  }
-
-  // Simulate loading for 3 seconds
-  setTimeout(() => {
-    hidePreloader();
-  }, 1500); // 3000ms = 3 seconds
-});

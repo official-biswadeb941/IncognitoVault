@@ -38,25 +38,6 @@ csrfInput.setAttribute('value', csrfToken);
 form.appendChild(csrfInput);
 });
 
-//Preloader & Loader
-document.addEventListener("DOMContentLoaded", function() {
-    const loader = document.getElementById('loader');
-    window.addEventListener('load', function() {
-        loader.classList.add('hidden');
-    });
-    const loginForm = document.querySelector('form'); 
-        if (loginForm) {
-        loginForm.addEventListener('submit', function(event) {
-            loader.classList.remove('hidden'); 
-            event.preventDefault();
-            setTimeout(function() {
-                loginForm.submit();
-            }, 100); 
-        });
-    }
-});
-
-
 // Function to show notifications
 function showNotification(message, type) {
   var notification = document.getElementById('notification');
@@ -146,3 +127,4 @@ function updateDateTime() {
 
 updateDateTime();
 setInterval(updateDateTime, 1000); // Update date and time every second
+

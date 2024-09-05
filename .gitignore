@@ -11,3 +11,5 @@ MySQL/
 Logs/
 Logs/Logs.log
 instance/
+.vscode
+.pytest_cache
