@@ -128,3 +128,5 @@ function updateDateTime() {
 updateDateTime();
 setInterval(updateDateTime, 1000); // Update date and time every second
 
+//Footer Date 
+document.getElementById('year').textContent = new Date().getFullYear();

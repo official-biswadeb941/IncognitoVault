@@ -17,7 +17,7 @@ def generate_captcha():
 
 def create_captcha_image(text):
     # Set up image size and background color
-    width, height = 120, 90
+    width, height = 120, 100
     background_color = (255, 255, 255)  # white background
     text_color = (0, 0, 0)  # black text
 

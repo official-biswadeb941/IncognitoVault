@@ -49,21 +49,25 @@
                     <i class='bx bx-grid-alt nav_icon'></i>
                     <span class="nav_name"><strong>Dashboard</strong></span>
                 </a>
-                <a href="/Form" class="nav_link" id="form-link" title="Manage Forms">
-                    <i class='bx bx-file nav_icon'></i>
-                    <span class="nav_name"><strong>Forms</strong></span>
-                </a>
                 <a href="/Database" class="nav_link" id="database-link" title="Access Database">
                     <i class='bx bx-data nav_icon'></i>
                     <span class="nav_name"><strong>Database</strong></span>
+                </a>
+                <a href="/Forms" class="nav_link" id="form-link" title="Manage Forms">
+                    <i class='bx bx-file nav_icon'></i>
+                    <span class="nav_name"><strong>Forms</strong></span>
+                </a>
+                <a href="/Settings" class="nav_link" id="settings-link" title="Change Settings">
+                    <i class='bx bx-cog nav_icon'></i>
+                    <span class="nav_name"><strong>Settings</strong></span>
                 </a>
                 <a href="/Logs" class="nav_link" id="logs-link" title="View Logs">
                     <i class='bx bx-book nav_icon'></i>
                     <span class="nav_name"><strong>Logs</strong></span>
                 </a>
-                <a href="/Settings" class="nav_link" id="settings-link" title="Change Settings">
-                    <i class='bx bx-cog nav_icon'></i>
-                    <span class="nav_name"><strong>Settings</strong></span>
+                <a href="/Documentation" class="nav_link" id="logs-link" title="App Documentation">
+                    <i class='bx bx-book nav_icon'></i>
+                    <span class="nav_name"><strong>Documentation</strong></span>
                 </a>
             </div>
         </div>
@@ -78,7 +82,12 @@
   <div class="height-100">
     <div class="container">
 
-
+      <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="dashboard-header">Settings</h1>
+            <hr class="header-line">   
+        </div>
+    </div>
       <!-- Password Changing Form -->
       <div class="card">
         <div class="card-header">
@@ -181,14 +190,14 @@
 
 
   <br><br><br>
-<footer class="footer">
-  <div class="container">
-      <div class="row">
-          <div class="col-md-12 d-flex justify-content-between align-items-center">
-              <span class="text-muted"><strong>&copy; 2024 IncognitoVault. All rights reserved.</strong></span>
-          </div>
-      </div>
-  </div>
+  <footer class="footer">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 d-flex justify-content-between align-items-center">
+                <span class="text-muted"><s<span class="text-muted"><strong>&copy; <span id="year"></span> Incognito Vault by ParseSphere Innovations. All Right Reserved.</strong></span>
+            </div>
+        </div>
+    </div>
 </footer>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>

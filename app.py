@@ -310,17 +310,17 @@ def dashboard():
         return render_template('App/dashboard.html', user=user, user_id=user_id)
     return redirect('/')
 
-@app.route('/Form')
-@session_expiry
-@limiter.limit(dynamic_rate_limit)
-def form():
-    return render_template('App/form.html')
-
 @app.route('/Database')
 @session_expiry
 @limiter.limit(dynamic_rate_limit)
 def database():
     return render_template('App/database.html')
+
+@app.route('/Forms')
+@session_expiry
+@limiter.limit(dynamic_rate_limit)
+def form():
+    return render_template('App/form.html')
 
 @app.route('/Logs')
 @session_expiry
@@ -333,6 +333,12 @@ def logs():
 @limiter.limit(dynamic_rate_limit)
 def settings():
     return render_template('App/settings.html')
+
+@app.route('/Documentation')
+@session_expiry
+@limiter.limit(dynamic_rate_limit)
+def documentation():
+    return render_template('App/Documentation.html')
 
 @app.route('/logout', methods=['GET', 'POST'])
 @limiter.limit("200 per minute")
