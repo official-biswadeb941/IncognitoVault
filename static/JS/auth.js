@@ -30,3 +30,23 @@ document.addEventListener('DOMContentLoaded', function() {
   });
   checkFields();
 });
+
+document.getElementById('loginForm').addEventListener('submit', function(event) {
+  event.preventDefault(); // Prevent form submission to show loader for testing
+  var loginButton = document.getElementById('loginButton');
+  var loaderContainer = document.getElementById('loader-container');
+  var loaderBackground = document.getElementById('loader-background');
+
+  // Show loader and background, disable button
+  loaderBackground.style.display = 'block'; // Show background
+  loaderContainer.style.display = 'block'; // Show loader and text
+  loginButton.value = 'Logging in...'; // Change button text
+  loginButton.classList.add('loading'); // Add loading class to disable button
+  loginButton.disabled = true;
+
+  // Simulate form submission delay for demonstration purposes
+  setTimeout(function() {
+    document.getElementById('loginForm').submit(); // Uncomment for real form submission
+  }, 3000); // 3 second delay for testing
+});
+

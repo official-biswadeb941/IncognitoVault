@@ -140,3 +140,91 @@ body {
   margin-right: auto;
   width: 50%;
 }
+
+/* Loader background overlay */
+.loader-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(180deg, #090718d2, #1c193bc2, #161625ce);
+  z-index: 9998; /* Behind the loader, above everything else */
+  display: none;
+}
+
+/* Custom, unique loader container */
+.loader-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  text-align: center;
+  display: none;
+}
+
+/* Loader */
+.loader {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  margin: 0 auto;
+}
+
+/* First Ring (Outer) */
+.loader::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 60px;
+  height: 60px;
+  border: 4px solid transparent;
+  border-top: 4px solid #ffd700;
+  border-left: 4px solid #ffd700;
+  border-radius: 50%;
+  animation: spin 1.5s linear infinite;
+}
+
+/* Second Ring (Inner) */
+.loader::after {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 40px;
+  height: 40px;
+  border: 4px solid transparent;
+  border-right: 4px solid #ffd700;
+  border-bottom: 4px solid #ffd700;
+  border-radius: 50%;
+  animation: spin 2s linear infinite reverse; /* Reverse direction for visual effect */
+}
+
+/* Loader text */
+.loader-text {
+  margin-top: 15px;
+  color: #fff;
+  font-family: 'Nunito', sans-serif;
+  font-size: 22px;
+  font-weight: bold
+}
+
+/* Loader Animation */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Disabled button style */
+.loading {
+  background-color: #666 !important;
+  cursor: not-allowed;
+}
+
+
