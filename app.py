@@ -278,7 +278,7 @@ def login_route():
         user = login(name, password)
         if user:
             session.clear()
-            session.update({'user': user, 'user_id': generate_user_id(name), 'last_activity': datetime.now().strftime('%Y-%m-%d %H:%M:%S')})
+            session.update({'user': user, 'user_id': generate_user_id(name), 'username':name, 'last_activity': datetime.now().strftime('%Y-%m-%d %H:%M:%S')})
             session.permanent = True
             response = make_response(redirect('/Dashboard'))
             response.set_cookie('session', '', max_age=0)  # Clear existing cookie
@@ -306,8 +306,9 @@ def login_route():
 def dashboard():
     if 'user' in session:
         user = session['user']
+        name = session['username']
         user_id = session['user_id']
-        return render_template('App/dashboard.html', user=user, user_id=user_id)
+        return render_template('App/dashboard.html', user=user, user_id=user_id, name=name)
     return redirect('/')
 
 @app.route('/Database')
@@ -316,8 +317,9 @@ def dashboard():
 def database():
     if 'user' in session:
         user = session['user']
+        name = session['username']
         user_id = session['user_id']
-    return render_template('App/database.html', user=user, user_id=user_id)
+    return render_template('App/database.html', user=user, user_id=user_id, name=name)
 
 @app.route('/Forms')
 @session_expiry
@@ -325,8 +327,9 @@ def database():
 def form():
     if 'user' in session:
         user = session['user']
+        name = session['username']
         user_id = session['user_id']
-    return render_template('App/form.html', user=user, user_id=user_id)
+    return render_template('App/form.html', user=user, user_id=user_id, name=name)
 
 @app.route('/Logs')
 @session_expiry
@@ -334,8 +337,9 @@ def form():
 def logs():
     if 'user' in session:
         user = session['user']
+        name = session['username']
         user_id = session['user_id']
-    return render_template('App/Logs.html', user=user, user_id=user_id)
+    return render_template('App/Logs.html', user=user, user_id=user_id, name=name)
 
 @app.route('/Settings')
 @session_expiry
@@ -343,8 +347,9 @@ def logs():
 def settings():
     if 'user' in session:
         user = session['user']
+        name = session['username']
         user_id = session['user_id']
-    return render_template('App/settings.html', user=user, user_id=user_id)
+    return render_template('App/settings.html', user=user, user_id=user_id, name=name)
 
 @app.route('/Documentation')
 @session_expiry
@@ -352,14 +357,15 @@ def settings():
 def documentation():
     if 'user' in session:
         user = session['user']
+        name = session['username']
         user_id = session['user_id']
-    return render_template('App/Documentation.html', user=user, user_id=user_id)
+    return render_template('App/Documentation.html', user=user, user_id=user_id, name=name)
 
 @app.route('/logout', methods=['GET', 'POST'])
 @limiter.limit("200 per minute")
 def logout_route():
     if 'user' in session:
-        for key in ['user', 'user_id', 'last_activity']:
+        for key in ['user', 'name','user_id', 'last_activity']:
             session.pop(key, None)
         response = make_response(redirect('/'))
         response.set_cookie('csrf_token', '', expires=0)

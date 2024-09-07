@@ -197,3 +197,9 @@ setInterval(updateDateTime, 1000); // Update date and time every second
 //Footer Date 
 document.getElementById('year').textContent = new Date().getFullYear();
 
+$(document).ready(function(){
+  // Check if dropdown is working
+  $('#dropdownMenuButton').on('click', function(){
+    console.log('Dropdown button clicked');
+  });
+});

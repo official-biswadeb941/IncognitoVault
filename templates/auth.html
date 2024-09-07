@@ -61,12 +61,12 @@
         </div>
         <div class="form-group">
           <label for="username">Username</label>
-          <input type="text" class="form-control" placeholder="Enter your username" name="name" autocomplete="off">
+          <input type="text" class="form-control" placeholder="Enter your username" id="username" name="name" autocomplete="off">
           {% for honeypot_name, honeypot_value in login_honeypots.items() if 'username' in honeypot_name %}<input type="hidden" name="{{ honeypot_name }}" value="{{ honeypot_value }}">{% endfor %}
         </div>
         <div class="form-group">
           <label for="password">Password</label>
-          <input type="password" class="form-control" placeholder="Enter your password" name="password" autocomplete="off">
+          <input type="password" class="form-control" placeholder="Enter your password" id="password" name="password" autocomplete="off">
           {% for honeypot_name, honeypot_value in login_honeypots.items() if 'password' in honeypot_name %}<input type="hidden" name="{{ honeypot_name }}" value="{{ honeypot_value }}">{% endfor %}
         </div>
         <div class="captcha">
@@ -76,7 +76,7 @@
        </div>
        <br>
         <div class="form-group">
-          <input type="text" class="form-control" placeholder="Enter the captcha shown above" name="captcha" autocomplete="off">
+          <input type="text" class="form-control" placeholder="Enter the captcha shown above" id="captcha" name="captcha" autocomplete="off">
           {% for honeypot_name, honeypot_value in login_honeypots.items() if 'captcha' in honeypot_name %}<input type="hidden" name="{{ honeypot_name }}" value="{{ honeypot_value }}">{% endfor %}
         </div>
         <input type="submit" value="Login" class="btn btn-primary btn-block" id="loginButton">
