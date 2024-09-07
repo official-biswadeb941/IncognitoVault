@@ -314,7 +314,10 @@ def dashboard():
 @session_expiry
 @limiter.limit(dynamic_rate_limit)
 def database():
-    return render_template('App/database.html')
+    if 'user' in session:
+        user = session['user']
+        user_id = session['user_id']
+    return render_template('App/database.html', user=user, user_id=user_id)
 
 @app.route('/Forms')
 @session_expiry
@@ -323,7 +326,7 @@ def form():
     if 'user' in session:
         user = session['user']
         user_id = session['user_id']
-    return render_template('App/form.html')
+    return render_template('App/form.html', user=user, user_id=user_id)
 
 @app.route('/Logs')
 @session_expiry
@@ -332,7 +335,7 @@ def logs():
     if 'user' in session:
         user = session['user']
         user_id = session['user_id']
-    return render_template('App/Logs.html')
+    return render_template('App/Logs.html', user=user, user_id=user_id)
 
 @app.route('/Settings')
 @session_expiry
@@ -341,7 +344,7 @@ def settings():
     if 'user' in session:
         user = session['user']
         user_id = session['user_id']
-    return render_template('App/settings.html')
+    return render_template('App/settings.html', user=user, user_id=user_id)
 
 @app.route('/Documentation')
 @session_expiry
@@ -350,7 +353,7 @@ def documentation():
     if 'user' in session:
         user = session['user']
         user_id = session['user_id']
-    return render_template('App/Documentation.html')
+    return render_template('App/Documentation.html', user=user, user_id=user_id)
 
 @app.route('/logout', methods=['GET', 'POST'])
 @limiter.limit("200 per minute")
