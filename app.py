@@ -36,7 +36,7 @@ app.config.update({
     'SESSION_PERMANENT': False,
     'SESSION_USE_SIGNER': True,
     'SESSION_KEY_PREFIX': 'session:',
-    'SEND_FILE_MAX_AGE_DEFAULT': timedelta(days=10)
+    'SEND_FILE_MAX_AGE_DEFAULT': timedelta(days=0)
 })
 
 redis_conn = get_redis_connection()  
@@ -320,24 +320,36 @@ def database():
 @session_expiry
 @limiter.limit(dynamic_rate_limit)
 def form():
+    if 'user' in session:
+        user = session['user']
+        user_id = session['user_id']
     return render_template('App/form.html')
 
 @app.route('/Logs')
 @session_expiry
 @limiter.limit(dynamic_rate_limit)
 def logs():
+    if 'user' in session:
+        user = session['user']
+        user_id = session['user_id']
     return render_template('App/Logs.html')
 
 @app.route('/Settings')
 @session_expiry
 @limiter.limit(dynamic_rate_limit)
 def settings():
+    if 'user' in session:
+        user = session['user']
+        user_id = session['user_id']
     return render_template('App/settings.html')
 
 @app.route('/Documentation')
 @session_expiry
 @limiter.limit(dynamic_rate_limit)
 def documentation():
+    if 'user' in session:
+        user = session['user']
+        user_id = session['user_id']
     return render_template('App/Documentation.html')
 
 @app.route('/logout', methods=['GET', 'POST'])
