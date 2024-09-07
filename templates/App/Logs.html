@@ -1,93 +1,10 @@
-<!DOCTYPE html>
-<html>
+{% extends "App/Base/base.html" %}
 
-<head>
-  <meta charset="UTF-8">
-  <title>Logs - IncognitoVault</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="csrf-token" content="{{ csrf_token() }}">
-  <meta name="user-id" content="{{ user_id }}">
-  <meta name="app-id" content="{{app_id}}">
-  <meta name="organization" content="IncognitoVault - Secure Personal Space Solutions">
-  <meta name="description" content="IncognitoVault provides secure and private digital spaces for personal and professional use.">
-  <meta name="author" content="ParseSphere Innovations">
-  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0id2hpdGUiIGNsYXNzPSJiaSBiaS1sb2NrLWZpbGwiIHZpZXdCb3g9IjAgMCAxNiAxNiI+PHBhdGggZD0iTTggMWEyIDIgMCAwIDEgMiAydjRINlYzYTIgMiAwIDAgMSAyLTJtMyA2VjNhMyAzIDAgMCAwLTYgMHY0YTIgMiAwIDAgMC0yIDJ2NWEyIDIgMCAwIDAgMiAyaDZhMiAyIDAgMCAwIDItMlY5YTIgMiAwIDAgMC0yLTJ6Ii8+PC9zdmc+" type="image/svg+xml">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css">
-  <link rel="stylesheet" href="{{ url_for('static', filename='CSS/dashboard.css') }}">
-</head>
+{% block title %}Logs - IncognitoVault{% endblock %}
 
-<body id="body-pd">
+{% block page_header %}Logs{% endblock %}
 
-  <header class="header" id="header">
-      <div class="header_toggle">
-          <i class='bx bx-menu' id="header-toggle"></i>
-      </div>
-      <div class="date-time">
-        <div class="container">
-          <div class="row">
-              <div class="col-md-12 d-flex justify-content-between align-items-center">
-                  <span id="date-time" class="text-muted"></span>
-              </div>
-          </div>
-      </div>
-  </div>
-      <div class="logo_img">
-        <i class='bx bx-lock nav_logo-icon'><b>IV</b></i>
-      </div>
-</header>
-
-<div class="l-navbar" id="nav-bar">
-    <nav class="nav">
-        <div>
-            <a href="javascript:void(0);" class="nav_logo" title="Go to Home">
-                <i class='bx bx-lock nav_logo-icon'></i>
-                <span class="lock-name"><strong>Incognito Vault</strong></span>
-            </a>
-            <div class="nav_list">
-                <a href="/Dashboard" class="nav_link" id="dashboard-link" title="View Dashboard">
-                    <i class='bx bx-grid-alt nav_icon'></i>
-                    <span class="nav_name"><strong>Dashboard</strong></span>
-                </a>
-                <a href="/Database" class="nav_link" id="database-link" title="Access Database">
-                    <i class='bx bx-data nav_icon'></i>
-                    <span class="nav_name"><strong>Database</strong></span>
-                </a>
-                <a href="/Forms" class="nav_link" id="form-link" title="Manage Forms">
-                    <i class='bx bx-file nav_icon'></i>
-                    <span class="nav_name"><strong>Forms</strong></span>
-                </a>
-                <a href="/Settings" class="nav_link" id="settings-link" title="Change Settings">
-                    <i class='bx bx-cog nav_icon'></i>
-                    <span class="nav_name"><strong>Settings</strong></span>
-                </a>
-                <a href="/Logs" class="nav_link" id="logs-link" title="View Logs">
-                    <i class='bx bx-book nav_icon'></i>
-                    <span class="nav_name"><strong>Logs</strong></span>
-                </a>
-                <a href="/Documentation" class="nav_link" id="logs-link" title="App Documentation">
-                    <i class="bx bx-file nav_icon"></i>
-                    <span class="nav_name"><strong>Documentation</strong></span>
-                </a>
-            </div>
-        </div>
-        <a href="/logout" class="nav_link" title="Sign Out">
-            <i class='bx bx-log-out nav_icon'></i>
-            <span class="nav_name"><strong>SignOut</strong></span>
-        </a>
-    </nav>
-</div>
-
-<br>
-  <div class="height-100">
-    <div class="container">
-
-        <div class="row mb-4">
-            <div class="col-12">
-                <h1 class="dashboard-header">Logs</h1>
-                <hr class="header-line">   
-            </div>
-        </div>
+{% block content %}
 
         <!-- Logs Table -->
         <div class="card mt-4">
@@ -165,54 +82,4 @@
 </div>
 
 
-<br>
-<footer class="footer">
-    <div class="container">
-        <div class="row">
-            <div class="col-md-12 d-flex justify-content-between align-items-center">
-                <span class="text-muted"><s<span class="text-muted"><strong>&copy; <span id="year"></span> Incognito Vault by ParseSphere Innovations. All Right Reserved.</strong></span>
-            </div>
-        </div>
-    </div>
-</footer>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous"></script>
-  <script src="{{ url_for('static', filename='JS/alive.js') }}"></script>
-  <script src="{{ url_for('static', filename='JS/dashboard.js') }}"></script>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-    // Function to add a new log entry to the table
-    function addLogEntry(log) {
-        const tableBody = document.getElementById('logs-table-body');
-        const newRow = document.createElement('tr');
-
-        newRow.innerHTML = `
-            <th scope="row">${log.id}</th>
-            <td>${log.userName}</td>
-            <td>${log.ipAddress}</td>
-            <td>${log.dateTime}</td>
-            <td>${log.criticality}</td>
-            <td>${log.userAction}</td>
-        `;
-
-        tableBody.appendChild(newRow);
-    }
-
-    // Example: Adding a log dynamically
-    addLogEntry({
-        id: 3,
-        userName: 'Alice Brown',
-        ipAddress: '192.168.1.3',
-        dateTime: '2024-08-26 12:40:30',
-        criticality: 'Low',
-        userAction: 'Database query'
-    });
-});
-
-  </script>
-
-</body>
-</html>
+{% endblock %}

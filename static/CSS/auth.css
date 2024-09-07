@@ -1,3 +1,5 @@
+/*Login Form*/
+
 body {
     background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
     color: #fff;
@@ -134,6 +136,7 @@ body {
     }
   }
 
+/*Captcha Image*/
 .captcha img{
   display: block;
   margin-left: auto;
@@ -141,7 +144,7 @@ body {
   width: 50%;
 }
 
-/* Loader background overlay */
+/*Loader*/
 .loader-background {
   position: fixed;
   top: 0;
@@ -153,7 +156,6 @@ body {
   display: none;
 }
 
-/* Custom, unique loader container */
 .loader-container {
   position: fixed;
   top: 50%;
@@ -164,7 +166,6 @@ body {
   display: none;
 }
 
-/* Loader */
 .loader {
   position: relative;
   width: 60px;
@@ -172,7 +173,6 @@ body {
   margin: 0 auto;
 }
 
-/* First Ring (Outer) */
 .loader::before {
   content: '';
   position: absolute;
@@ -187,7 +187,6 @@ body {
   animation: spin 1.5s linear infinite;
 }
 
-/* Second Ring (Inner) */
 .loader::after {
   content: '';
   position: absolute;
@@ -202,7 +201,6 @@ body {
   animation: spin 2s linear infinite reverse; /* Reverse direction for visual effect */
 }
 
-/* Loader text */
 .loader-text {
   margin-top: 15px;
   color: #fff;
@@ -211,7 +209,6 @@ body {
   font-weight: bold
 }
 
-/* Loader Animation */
 @keyframes spin {
   0% {
     transform: rotate(0deg);
@@ -221,7 +218,6 @@ body {
   }
 }
 
-/* Disabled button style */
 .loading {
   background-color: #666 !important;
   cursor: not-allowed;

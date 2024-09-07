@@ -1,3 +1,5 @@
+/* Custom Style For Whole Website */
+
 @import url('https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&family=Wittgenstein:ital,wght@0,400..900;1,400..900&display=swap');
 
   :root {
@@ -24,7 +26,6 @@ body {
     font-family: var(--body-font);
     font-size: var(--normal-font-size);
     background-size: cover;
-    /*background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);*/
     background-image: url(https://images.unsplash.com/photo-1610447158291-d917870bf750?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8NGslMjBmb3Jlc3R8ZW58MHx8MHx8fDA%3D);
     background-position: center;
     transition: .5s;
@@ -67,6 +68,22 @@ a {
 
 .header_img img {
     width: 40px;
+}
+
+.website-header{
+    margin-bottom: 10px;
+    font-weight: bold;
+    text-align: left !important;
+    font-size: 40px !important;
+    color: white !important;
+}
+
+.header-line {
+    border: 0;
+    height: 5px;
+    background: #ffffff; /* Light gray color */
+    margin: 0 auto;
+    width: 100%; /* Adjust the width as needed */
 }
 
 .l-navbar {
@@ -152,6 +169,7 @@ a {
     background-color: var(--white-color);
 }
 
+/* Custom Style for Main Body */
 .height-100 {
     height: auto;
     background: linear-gradient(135deg, #09071a, #211e44, #161625);
@@ -163,6 +181,16 @@ a {
 }
 
 /* Base card styling */
+.card {
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px; /* Added spacing between cards */
+    color: white;
+}
+
 .card-elegant {
     border: none;
     border-radius: 15px; /* Rounded corners */
@@ -257,16 +285,6 @@ i {
 }
 
 /*Settings*/
-.card {
-    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-    backdrop-filter: blur(10px);
-    border-radius: 15px;
-    padding: 20px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px; /* Added spacing between cards */
-    color: white;
-}
-
 .form-control {
     border-radius: 10px;
     background: rgba(255, 255, 255, 0.9);
@@ -274,9 +292,10 @@ i {
     font-weight: bold;
 }
 
-  .form-label {
+.form-label {
     color: #ffffff;
 }
+
 
 .btn-primary {
     border-radius: 10px;
@@ -337,6 +356,7 @@ i {
     color: white !important;
 }
 
+/* Custom Style for Footer */
 .footer {
     position: fixed;
     bottom: 0;
@@ -356,28 +376,6 @@ i {
     font-weight: bold;
     font-family: 'Gill Sans';
 }
-
-.dashboard-header {
-    margin-bottom: 10px;
-    font-weight: bold;
-    text-align: left !important;
-    font-size: 40px !important;
-    color: white !important;
-}
-
-.header-line {
-    border: 0;
-    height: 5px;
-    background: #ffffff; /* Light gray color */
-    margin: 0 auto;
-    width: 100%; /* Adjust the width as needed */
-}
-
-.dashboard-subtitle {
-    font-size: 1rem;
-    color: #ffffff; /* Slightly darker gray for subtitle */
-}
-
 
 
 @media screen and (min-width: 600px) {

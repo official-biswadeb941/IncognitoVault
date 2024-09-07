@@ -36,7 +36,7 @@ app.config.update({
     'SESSION_PERMANENT': False,
     'SESSION_USE_SIGNER': True,
     'SESSION_KEY_PREFIX': 'session:',
-    'SEND_FILE_MAX_AGE_DEFAULT': timedelta(days=30)
+    'SEND_FILE_MAX_AGE_DEFAULT': timedelta(days=10)
 })
 
 redis_conn = get_redis_connection()  

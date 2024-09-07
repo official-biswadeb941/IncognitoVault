@@ -1,31 +1,122 @@
 document.addEventListener("DOMContentLoaded", function(event) {
-const showNavbar = (toggleId, navId, bodyId, headerId) =>{
-const toggle = document.getElementById(toggleId),
-nav = document.getElementById(navId),
-bodypd = document.getElementById(bodyId),
-headerpd = document.getElementById(headerId)
+  // Navbar toggle function
+  const showNavbar = (toggleId, navId, bodyId, headerId) => {
+    const toggle = document.getElementById(toggleId),
+      nav = document.getElementById(navId),
+      bodypd = document.getElementById(bodyId),
+      headerpd = document.getElementById(headerId);
 
-if(toggle && nav && bodypd && headerpd){
-toggle.addEventListener('click', ()=>{
-nav.classList.toggle('show')
-toggle.classList.toggle('bx-x')
-bodypd.classList.toggle('body-pd')
-headerpd.classList.toggle('body-pd')
-})
-}
-}
+    if (toggle && nav && bodypd && headerpd) {
+      toggle.addEventListener('click', () => {
+        nav.classList.toggle('show');
+        toggle.classList.toggle('bx-x');
+        bodypd.classList.toggle('body-pd');
+        headerpd.classList.toggle('body-pd');
+      });
+    }
+  };
 
-showNavbar('header-toggle','nav-bar','body-pd','header')
-const linkColor = document.querySelectorAll('.nav_link')
-function colorLink(){
-if(linkColor){
-linkColor.forEach(l=> l.classList.remove('active'))
-this.classList.add('active')
-}
-}
-linkColor.forEach(l=> l.addEventListener('click', colorLink))
+  showNavbar('header-toggle', 'nav-bar', 'body-pd', 'header');
 
+  // Navbar link active state function
+  const linkColor = document.querySelectorAll('.nav_link');
+  function colorLink() {
+    if (linkColor) {
+      linkColor.forEach(l => l.classList.remove('active'));
+      this.classList.add('active');
+    }
+  }
+  linkColor.forEach(l => l.addEventListener('click', colorLink));
+
+  // Toggle email configuration sections function
+  function toggleEmailOption(option) {
+    const smtpConfig = document.getElementById('smtp-config');
+    const apiConfig = document.getElementById('api-config');
+    
+    if (option === 'smtp') {
+      if (smtpOption.checked) {
+        smtpConfig.style.display = 'block';
+        apiConfig.style.display = 'none';
+        apiOption.checked = false;
+      } else {
+        smtpConfig.style.display = 'none';
+      }
+    } else if (option === 'api') {
+      if (apiOption.checked) {
+        apiConfig.style.display = 'block';
+        smtpConfig.style.display = 'none';
+        smtpOption.checked = false;
+      } else {
+        apiConfig.style.display = 'none';
+      }
+    }
+  }
+
+  const smtpOption = document.getElementById('smtp-option');
+  const apiOption = document.getElementById('api-option');
+
+  smtpOption.addEventListener('change', function() {
+    if (smtpOption.checked) {
+      toggleEmailOption('smtp');
+    }
+  });
+
+  apiOption.addEventListener('change', function() {
+    if (apiOption.checked) {
+      toggleEmailOption('api');
+    }
+  });
+
+  // Handle active class based on current URL
+  const currentPath = window.location.pathname;
+  const navLinks = [
+    { path: '/Dashboard', elementId: 'dashboard-link' },
+    { path: '/Form', elementId: 'form-link' },
+    { path: '/Database', elementId: 'database-link' },
+    { path: '/Logs', elementId: 'logs-link' },
+    { path: '/Settings', elementId: 'settings-link' },
+  ];
+
+  navLinks.forEach(link => {
+    const navElement = document.getElementById(link.elementId);
+    if (currentPath === link.path) {
+      navElement.classList.add('active');
+    } else {
+      navElement.classList.remove('active');
+    }
+  });
+
+  // Logs section
+  function addLogEntry(log) {
+    const tableBody = document.getElementById('logs-table-body');
+    const newRow = document.createElement('tr');
+
+    newRow.innerHTML = `
+      <th scope="row">${log.id}</th>
+      <td>${log.userName}</td>
+      <td>${log.ipAddress}</td>
+      <td>${log.dateTime}</td>
+      <td>${log.criticality}</td>
+      <td>${log.userAction}</td>
+    `;
+
+    tableBody.appendChild(newRow);
+  }
+
+  // Example log entry
+  addLogEntry({
+    id: 3,
+    userName: 'Alice Brown',
+    ipAddress: '192.168.1.3',
+    dateTime: '2024-08-26 12:40:30',
+    criticality: 'Low',
+    userAction: 'Database query'
+  });
+
+  // Future Function Placeholder
+  // Add new functions below this comment
 });
+
 
 //Function for putting csrf token in header.
 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -88,31 +179,6 @@ window.onload = function () {
   loadNotifications();
 };
 
-// JavaScript to handle active class switching based on current URL
-document.addEventListener('DOMContentLoaded', function () {
-  // Get the current pathname (e.g., "/Dashboard", "/Form")
-  const currentPath = window.location.pathname;
-
-  // List of nav links and their corresponding paths
-  const navLinks = [
-      { path: '/Dashboard', elementId: 'dashboard-link' },
-      { path: '/Form', elementId: 'form-link' },
-      { path: '/Database', elementId: 'database-link' },
-      { path: '/Logs', elementId: 'logs-link' },
-      { path: '/Settings', elementId: 'settings-link' },
-  ];
-
-  // Loop through each nav link to find the match and add the 'active' class
-  navLinks.forEach(link => {
-      const navElement = document.getElementById(link.elementId);
-      if (currentPath === link.path) {
-          navElement.classList.add('active');
-      } else {
-          navElement.classList.remove('active');
-      }
-  });
-});
-
 function updateDateTime() {
   const now = new Date();
   const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'Asia/Kolkata', hour12: true };
@@ -130,3 +196,4 @@ setInterval(updateDateTime, 1000); // Update date and time every second
 
 //Footer Date 
 document.getElementById('year').textContent = new Date().getFullYear();
+
