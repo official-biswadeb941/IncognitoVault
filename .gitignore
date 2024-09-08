@@ -13,3 +13,4 @@ Logs/Logs.log
 instance/
 .vscode
 .pytest_cache
+Features.txt
