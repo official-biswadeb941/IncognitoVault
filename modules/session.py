@@ -1,19 +1,30 @@
-import hashlib
-import os
-import binascii
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+from cryptography.hazmat.backends import default_backend
+import secrets
 
-def session():
-    # Generate a larger random secret key (128 bytes for added strength)
-    secret_key = os.urandom(512)
-    
-    # Use PBKDF2-HMAC with Whirlpool and many iterations for extra security
-    salt = os.urandom(128)  # Use a longer salt (64 bytes)
-    iterations = 200000    # Increase the number of iterations for added security
-    
-    # Use Whirlpool instead of SHA512
-    hashed_key = hashlib.pbkdf2_hmac('whirlpool', secret_key, salt, iterations)
-    
-    # Convert the binary hashed key to a hexadecimal string
-    hashed_key = binascii.hexlify(hashed_key).decode('utf-8')
+def generate_key():
+    salt = secrets.token_bytes(64)
+    ikm = secrets.token_bytes(80)
+    hkdf = HKDF(
+        algorithm=hashes.SHA512(),
+        length=128,
+        salt=salt,
+        info=b'key derivation',
+        backend=default_backend()
+    )
+    derived_key = hkdf.derive(ikm)
+    return derived_key.hex()
 
-    return hashed_key
+def generate_session_key(length: int = 128) -> str:
+    salt = secrets.token_bytes(128)
+    ikm = secrets.token_bytes(128)
+    hkdf = HKDF(
+        algorithm=hashes.SHA512(),
+        length=length,
+        salt=salt,
+        info=b'key derivation',
+        backend=default_backend()
+    )
+    derived_key = hkdf.derive(ikm)
+    return derived_key.hex()

@@ -1,0 +1,12 @@
+Flask
+Flask-WTF
+requests
+pymysql
+argon2-cffi
+WTForms
+Flask-Limiter
+redis
+email-validator
+APScheduler
+cryptography
+

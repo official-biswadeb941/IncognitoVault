@@ -1,5 +1,5 @@
 # Standard library imports
-import random, string, logging, os, json, secrets, base64
+import random, string, logging, os, json, secrets, base64, hmac, binascii, secrets
 from io import BytesIO
 from datetime import timedelta, datetime
 from collections import deque
@@ -17,7 +17,7 @@ import pymysql
 
 # Custom module imports
 from modules.caching import configure_cache, push_data_with_ttl, pop_data, get_redis_connection, get_redis_uri
-from modules.session import session as session_module
+from modules.session import *
 from modules.form import LoginForm
 from modules.captcha import generate_captcha, validate_captcha
 
@@ -27,7 +27,7 @@ from functools import wraps
 
 ################### Initialization and Configuration ########################
 app = Flask(__name__)
-app.secret_key = session_module()
+app.secret_key = generate_key()
 
 app.config.update({
     'ENV': 'development',
@@ -196,7 +196,7 @@ def manage_session_and_https():
         if session_data:
             session.update(json.loads(session_data.decode('utf-8')))
     else:
-        session_id = generate_random_string(32)  # Generate a unique session ID
+        session_id = generate_session_key(length=128)
         session['session_id'] = session_id
 
 @app.after_request
