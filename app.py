@@ -36,7 +36,11 @@ app.config.update({
     'SESSION_PERMANENT': False,
     'SESSION_USE_SIGNER': True,
     'SESSION_KEY_PREFIX': 'session:',
-    'SEND_FILE_MAX_AGE_DEFAULT': timedelta(days=0)
+    'SEND_FILE_MAX_AGE_DEFAULT': timedelta(days=0),
+    #'SESSION_COOKIE_SECURE': True,
+    #'SESSION_COOKIE_HTTPONLY': True,
+    'SESSION_COOKIE_SAMESITE': 'Lax',  # CSRF protection
+    'WTF_CSRF_TIME_LIMIT': None,
 })
 
 redis_conn = get_redis_connection()  
@@ -280,15 +284,16 @@ def login_route():
         password = login_form.password.data
         user = login(name, password)
         if user:
-            session.clear()
-            session.update({'user': user, 'user_id': generate_user_id(name), 'username':name, 'last_activity': datetime.now().strftime('%Y-%m-%d %H:%M:%S')})
-            session.permanent = True
+            csrf_token = session.get('_csrf_token')
+            session.clear()  # Clear the session
+            session['user'] = user
+            session['user_id'] = generate_user_id(name)
+            session['username'] = name
+            session['last_activity'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            session.modified = True  # Mark session as modified to regenerate session ID
+            session.permanent = True  # Make session permanent
             response = make_response(redirect('/Dashboard'))
-            response.set_cookie('session', '', max_age=0)  # Clear existing cookie
-            response.set_cookie('session', 'new', max_age=SESSION_TIMEOUT, httponly=True, secure=True, samesite='Lax')
-            # Add username and user_id to response headers
-            response.headers['X-Username'] = name
-            response.headers['X-User-ID'] = session['user_id']
+            response.set_cookie('session_id', session.get('session_id', ''), max_age=SESSION_TIMEOUT, httponly=True, secure=True, samesite='Lax')  # Set secure cookie
             return response
         else:
             captcha_image, captcha_answer = generate_captcha()

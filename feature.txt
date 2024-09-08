@@ -9,9 +9,6 @@ Certainly! Let’s go through the code and identify potential security issues. I
 **Issue:** 
 - **Session Fixation**: The `session_id` cookie is set or updated without a secure session handling mechanism, which could allow session fixation attacks if an attacker sets a known session ID.
 
-**Exploit:**
-- An attacker could set a session ID via a different attack vector (e.g., URL parameter) and then hijack that session.
-
 **Fix:**
 - Ensure the `session_id` is properly managed and regenerated upon login or sensitive actions. Use Flask's built-in session management to handle cookies securely.
 
