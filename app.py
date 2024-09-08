@@ -168,10 +168,13 @@ app_id = generate_app_id()
 ###################### Security and Middleware Functions #######################
 @app.after_request
 def set_security_headers(response):
+    if 'user' in session and 'username' in session and 'user_id' in session:
+        response.headers['X-Username'] = session['username']
+        response.headers['X-User-ID'] = session['user_id']
+    response.headers['X-App-ID'] = app_id
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['X-Frame-Options'] = 'DENY'
     response.headers['X-XSS-Protection'] = '1; mode=block'
-    response.headers['X-App-ID'] = app_id
     response.headers['Referrer-Policy'] = 'no-referrer-when-downgrade'
     response.headers['Permissions-Policy'] = 'geolocation=(), camera=(), microphone=()'
     if app.config['ENV'] == 'production':
@@ -283,6 +286,9 @@ def login_route():
             response = make_response(redirect('/Dashboard'))
             response.set_cookie('session', '', max_age=0)  # Clear existing cookie
             response.set_cookie('session', 'new', max_age=SESSION_TIMEOUT, httponly=True, secure=True, samesite='Lax')
+            # Add username and user_id to response headers
+            response.headers['X-Username'] = name
+            response.headers['X-User-ID'] = session['user_id']
             return response
         else:
             captcha_image, captcha_answer = generate_captcha()
