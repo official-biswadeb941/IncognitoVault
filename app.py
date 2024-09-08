@@ -13,6 +13,7 @@ from flask_session import Session
 from werkzeug.exceptions import TooManyRequests, BadRequest
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
+from urllib.parse import urlparse
 import pymysql
 
 # Custom module imports
@@ -41,6 +42,7 @@ app.config.update({
     #'SESSION_COOKIE_HTTPONLY': True,
     'SESSION_COOKIE_SAMESITE': 'Lax',  # CSRF protection
     'WTF_CSRF_TIME_LIMIT': None,
+    'PERMANENT_SESSION_LIFETIME': timedelta(seconds=60)
 })
 
 redis_conn = get_redis_connection()  
@@ -110,25 +112,7 @@ def dynamic_rate_limit():
     else:
         return "60 per minute"
 
-###################### Session Management ######################
-def session_expiry(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        user_id = session.get('user_id', get_remote_address())
-        session_key = f'session:last_activity:{user_id}'
-        last_activity = pop_data(redis_conn, session_key)
-        current_time = datetime.now()
-        current_time_str = current_time.strftime('%Y-%m-%d %H:%M:%S')  # Format once and reuse
-        if last_activity:
-            if isinstance(last_activity, bytes):
-                last_activity = last_activity.decode('utf-8')
-            last_activity = datetime.strptime(last_activity, '%Y-%m-%d %H:%M:%S')
-            if (current_time - last_activity).total_seconds() > SESSION_TIMEOUT:
-                session.clear()
-                return redirect('/') 
-        push_data_with_ttl(redis_conn, session_key, current_time_str, SESSION_TIMEOUT)
-        return func(*args, **kwargs)
-    return wrapper
+
 
 ####################### Utility Functions #####################
 def create_table():
@@ -183,13 +167,19 @@ def set_security_headers(response):
     response.headers['Permissions-Policy'] = 'geolocation=(), camera=(), microphone=()'
     if app.config['ENV'] == 'production':
         response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
-    response.headers.pop('Server', None)
+    response.headers['Server'] = 'None'
     return response
 
 @app.before_request
 def manage_session_and_https():
     if not request.is_secure and app.config['ENV'] != 'development':
-        return redirect(request.url.replace("http://", "https://"))
+        url_parts = urlparse(request.url)
+        if url_parts.scheme == "http":
+            secure_url = request.url.replace("http://", "https://")
+            if url_parts.netloc == request.host:
+                response = Response(status=301)
+                response.headers['Location'] = secure_url
+                return response
     session_id = request.cookies.get('session_id')
     if session_id:
         session_data = redis_conn.get(f'session:{session_id}')
@@ -312,7 +302,6 @@ def login_route():
     return render_template('auth.html', login_error='Invalid CAPTCHA', login_form=login_form, captcha_image_base64=captcha_image_base64, login_honeypots=login_honeypots)
 
 @app.route('/Dashboard')
-@session_expiry
 @limiter.limit(dynamic_rate_limit)
 def dashboard():
     if 'user' in session:
@@ -323,7 +312,6 @@ def dashboard():
     return redirect('/')
 
 @app.route('/Database')
-@session_expiry
 @limiter.limit(dynamic_rate_limit)
 def database():
     if 'user' in session:
@@ -333,7 +321,6 @@ def database():
     return render_template('App/database.html', user=user, user_id=user_id, name=name)
 
 @app.route('/Forms')
-@session_expiry
 @limiter.limit(dynamic_rate_limit)
 def form():
     if 'user' in session:
@@ -343,7 +330,6 @@ def form():
     return render_template('App/form.html', user=user, user_id=user_id, name=name)
 
 @app.route('/Logs')
-@session_expiry
 @limiter.limit(dynamic_rate_limit)
 def logs():
     if 'user' in session:
@@ -353,7 +339,6 @@ def logs():
     return render_template('App/Logs.html', user=user, user_id=user_id, name=name)
 
 @app.route('/Settings')
-@session_expiry
 @limiter.limit(dynamic_rate_limit)
 def settings():
     if 'user' in session:
@@ -363,7 +348,6 @@ def settings():
     return render_template('App/settings.html', user=user, user_id=user_id, name=name)
 
 @app.route('/Documentation')
-@session_expiry
 @limiter.limit(dynamic_rate_limit)
 def documentation():
     if 'user' in session:
@@ -379,7 +363,7 @@ def logout_route():
         for key in ['user', 'name','user_id', 'last_activity']:
             session.pop(key, None)
         response = make_response(redirect('/'))
-        response.set_cookie('csrf_token', '', expires=0)
+        response.set_cookie('csrf_token', '', expires=0, secure=True, httponly=True, samesite='Lax')
         return response
     return redirect('/')
 
