@@ -9,4 +9,6 @@ redis
 email-validator
 APScheduler
 cryptography
-
+Flask-Session
+flask_caching
+pillow
