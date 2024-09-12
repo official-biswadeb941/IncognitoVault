@@ -199,7 +199,7 @@ def save_session(response: Response):
     return response
 
 #################### Authentication Routes #######################
-def generate_honeypot_fields_for_fields(fields, length=16):
+def generate_honeypot_fields_for_fields(fields, length=64):
     return {f'{field}_hpot': ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(length))
         for field in fields
     }
@@ -254,7 +254,7 @@ def index():
     buffer.seek(0)
     captcha_image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
     login_fields = ['userType','login_username', 'login_password', 'login_captcha']
-    login_honeypots = generate_honeypot_fields_for_fields(login_fields, length=16)
+    login_honeypots = generate_honeypot_fields_for_fields(login_fields, length=64)
     return render_template('auth.html', login_form=login_form, captcha_image_base64=captcha_image_base64, login_honeypots=login_honeypots, app_id=app_id)
 
 @app.route('/login', methods=['POST', 'GET'])
