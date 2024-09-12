@@ -1,0 +1,16 @@
+.venv
+Database/
+/Database/Certificate/ca.pem
+/Database/config.json
+dump.rdb
+/modules/__pycache__
+__pycache__
+SSL/
+Test-Cases/
+MySQL/
+Logs/
+Logs/Logs.log
+instance/
+.vscode
+.pytest_cache
+Features.txt

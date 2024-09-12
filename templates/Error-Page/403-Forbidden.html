@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>403 Forbidden</title>
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="app-id" content="{{app_id}}">
+    <meta name="organization" content="IncognitoVault - Secure Personal Space Solutions">
+    <meta name="description" content="IncognitoVault provides secure and private digital spaces for personal and professional use.">
+    <meta name="author" content="ParseSphere Innovations">
+    <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0id2hpdGUiIGNsYXNzPSJiaSBiaS1sb2NrLWZpbGwiIHZpZXdCb3g9IjAgMCAxNiAxNiI+PHBhdGggZD0iTTggMWEyIDIgMCAwIDEgMiAydjRINlYzYTIgMiAwIDAgMSAyLTJtMyA2VjNhMyAzIDAgMCAwLTYgMHY0YTIgMiAwIDAgMC0yIDJ2NWEyIDIgMCAwIDAgMiAyaDZhMiAyIDAgMCAwIDItMlY5YTIgMiAwIDAgMC0yLTJ6Ii8+PC9zdmc+" type="image/svg+xml">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/error-page.css') }}">
+</head>
+<body>
+    <div class="container text-center">
+        <div class="row justify-content-center align-items-center vh-100">
+            <div class="col-md-8">
+                <div class="error-page">
+                    <h1 class="display-1">403</h1>
+                    <h2 class="display-4">Forbidden - Access Denied!</h2>
+                    <p class="lead">
+                        You don’t have permission to access this area. 🚫🔒
+                    </p>
+                    <p class="lead">
+                        Our security protocols have determined that you are not authorized to view this content. If you believe this is an error, please contact support.
+                    </p>
+                    <h4>Possible Causes:</h4>
+                    <ul class="list-unstyled">
+                        <li>Insufficient Permissions: You do not have the required permissions to access this resource.</li>
+                        <li>Restricted Area: The requested resource may be restricted based on your user role.</li>
+                        <li>Geographic Restrictions: Access may be blocked based on your geographic location.</li>
+                    </ul>
+                    <h4>Next Steps:</h4>
+                    <ul class="list-unstyled">
+                        <li>Verify Permissions: Ensure your account has the necessary permissions to access this content.</li>
+                        <li>Contact Support: Reach out to our support team if you believe you should have access.</li>
+                        <li>Return to Homepage: Use the link below to navigate back to the main site.</li>
+                    </ul>
+                    <a href="/" class="btn btn-primary btn-lg">Return to Homepage</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

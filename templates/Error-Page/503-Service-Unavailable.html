@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>503 Service Unavailable</title>
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="app-id" content="{{app_id}}">
+    <meta name="organization" content="IncognitoVault - Secure Personal Space Solutions">
+    <meta name="description" content="IncognitoVault provides secure and private digital spaces for personal and professional use.">
+    <meta name="author" content="ParseSphere Innovations">
+    <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0id2hpdGUiIGNsYXNzPSJiaSBiaS1sb2NrLWZpbGwiIHZpZXdCb3g9IjAgMCAxNiAxNiI+PHBhdGggZD0iTTggMWEyIDIgMCAwIDEgMiAydjRINlYzYTIgMiAwIDAgMSAyLTJtMyA2VjNhMyAzIDAgMCAwLTYgMHY0YTIgMiAwIDAgMC0yIDJ2NWEyIDIgMCAwIDAgMiAyaDZhMiAyIDAgMCAwIDItMlY5YTIgMiAwIDAgMC0yLTJ6Ii8+PC9zdmc+" type="image/svg+xml">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/error-page.css') }}">
+</head>
+<body>
+    <div class="container text-center">
+        <div class="row justify-content-center align-items-center vh-100">
+            <div class="col-md-8">
+                <div class="error-page">
+                    <h1 class="display-1">503</h1>
+                    <h2 class="display-4">Service Unavailable</h2>
+                    <p class="lead">
+                        The server is currently unable to handle the request due to temporary overloading or maintenance. 🛠️
+                    </p>
+                    <p class="lead">
+                        This error indicates that the server is temporarily unable to process requests.
+                    </p>
+                    <h4>Possible Causes:</h4>
+                    <ul class="list-unstyled">
+                        <li>Server Overload: The server may be experiencing a high volume of traffic.</li>
+                        <li>Maintenance: The server might be undergoing maintenance or updates.</li>
+                        <li>Temporary Issue: A temporary glitch or issue might be causing the problem.</li>
+                    </ul>
+                    <h4>Next Steps:</h4>
+                    <ul class="list-unstyled">
+                        <li>Try Again Later: The issue may be resolved soon, so try accessing the page again later.</li>
+                        <li>Check Server Status: If you manage the server, check its status and maintenance schedule.</li>
+                        <li>Contact Support: Reach out to support if you need assistance or further information.</li>
+                    </ul>
+                    <a href="/" class="btn btn-primary btn-lg">Return to Homepage</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
