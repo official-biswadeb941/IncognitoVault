@@ -12,3 +12,4 @@ cryptography
 Flask-Session
 flask_caching
 pillow
+gunicorn
