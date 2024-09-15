@@ -15,3 +15,4 @@ instance/
 .vscode
 .pytest_cache
 Features.txt
+__pycache__
