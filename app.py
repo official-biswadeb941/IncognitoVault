@@ -22,7 +22,7 @@ from modules.session import *
 from modules.form import LoginForm
 from modules.captcha import generate_captcha, validate_captcha
 
-# functools is not removed since it's probably used for decorators (verify before removing)
+# Functools
 from functools import wraps
 
 
@@ -115,7 +115,7 @@ def dynamic_rate_limit():
 
 
 ####################### Utility Functions #####################
-def create_table():
+def create_table_users():
     try:
         with db.cursor() as cursor:
             sql = """
@@ -150,6 +150,8 @@ def generate_app_id():
     return f"IncognitoVault-{generate_random_string(8)}"
 
 app_id = generate_app_id()
+
+create_table_users()
 
 
 ###################### Security and Middleware Functions #######################
