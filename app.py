@@ -22,7 +22,7 @@ from modules.session import *
 from modules.form import LoginForm
 from modules.captcha import generate_captcha, validate_captcha
 
-# Functools
+# functools is not removed since it's probably used for decorators (verify before removing)
 from functools import wraps
 
 
@@ -112,23 +112,47 @@ def dynamic_rate_limit():
     else:
         return "60 per minute"
 
-
-
 ####################### Utility Functions #####################
-def create_table_users():
+def create_super_admin():
     try:
         with db.cursor() as cursor:
-            sql = """
-            CREATE TABLE IF NOT EXISTS users (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                username VARCHAR(255) NOT NULL UNIQUE,
-                password VARCHAR(255) NOT NULL
+            cursor.execute("SHOW TABLES LIKE 'super_admin'")
+            if cursor.fetchone():
+                print("Super admin table already exists.")
+            else:
+                sql = """
+                CREATE TABLE super_admin (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    username VARCHAR(255) NOT NULL UNIQUE,
+                    password VARCHAR(255) NOT NULL,
+                    role VARCHAR(50) NOT NULL,
+                    is_super_admin BOOLEAN NOT NULL DEFAULT FALSE
+                )
+                """
+                cursor.execute(sql)
+                db.commit()
+                print("Super admin table created.")
+            cursor.execute("SELECT COUNT(*) FROM super_admin WHERE is_super_admin = TRUE")
+            super_admin_exists = cursor.fetchone()['COUNT(*)'] > 0
+            if super_admin_exists:
+                print("Super admin user already exists. No further entries allowed.")
+                return 
+            config_folder = 'Config'
+            credentials_file = os.path.join(config_folder, 'creds.json')
+            with open(credentials_file, 'r') as f:
+                creds = json.load(f)
+            default_username = creds.get('username')
+            default_password = hash_password(creds.get('password'))
+            default_role = creds.get('role')
+            cursor.execute(
+                "INSERT INTO super_admin (username, password, role, is_super_admin) VALUES (%s, %s, %s, TRUE)",
+                (default_username, default_password, default_role)
             )
-            """
-            cursor.execute(sql)
-            db.commit()  
+            db.commit()
+            print("Default super admin user created.")
     except Exception as e:
-        print(f"Error creating table: {e}")
+        print(f"Error creating table or default admin user: {e}")
+
 
 def hash_password(password):
     return ph.hash(password)
@@ -150,9 +174,7 @@ def generate_app_id():
     return f"IncognitoVault-{generate_random_string(8)}"
 
 app_id = generate_app_id()
-
-create_table_users()
-
+create_super_admin()
 
 ###################### Security and Middleware Functions #######################
 @app.after_request
@@ -208,18 +230,18 @@ def generate_honeypot_fields_for_fields(fields, length=64):
 def user_exists(name, email):
     try:
         with db.cursor() as cursor:
-            sql = "SELECT id FROM users WHERE name = %s OR email = %s"
+            sql = "SELECT id FROM super_admin WHERE name = %s OR email = %s"
             cursor.execute(sql, (name, email))
             return cursor.fetchone() is not None
     except Exception as e:
         print(f"Error checking user existence: {e}")
         return False
 
-def login(name, password):
+def login(username, password):
     try:
         with db.cursor() as cursor:
-            sql = "SELECT id, password FROM users WHERE name = %s"
-            cursor.execute(sql, (name,))
+            sql = "SELECT id, password, is_super_admin FROM super_admin WHERE username = %s"
+            cursor.execute(sql, (username,))
             user = cursor.fetchone()
             if user and verify_password(user['password'], password):
                 return user
@@ -227,21 +249,6 @@ def login(name, password):
     except Exception as e:
         print(f"Error logging in: {e}")
         return None
-
-def signup(name, email, password):
-    if user_exists(name, email):
-        return jsonify({"error": "User with the same name or email already exists"}), 400
-    hashed_password = hash_password(password)
-    try:
-        with db.cursor() as cursor:
-            sql = "INSERT INTO users (name, email, password) VALUES (%s, %s, %s)"
-            cursor.execute(sql, (name, email, hashed_password))
-            db.commit()
-            return jsonify({"message": "User signed up successfully"}), 201
-    except Exception as e:
-        print(f"Error signing up: {e}")
-        db.rollback()  # Rollback in case of error
-        return jsonify({"error": "Failed to sign up"}), 500
 
 #################### Route Handlers ######################
 @limiter.limit(dynamic_rate_limit)
@@ -265,21 +272,24 @@ def login_route():
     login_honeypots = session.get('login_honeypots', {})
     captcha_answer = session.get('captcha_answer')
     user_captcha_answer = request.form.get('captcha')
-
     for honeypot_name, expected_value in login_honeypots.items():
         if request.form.get(honeypot_name) != expected_value:
-            return render_template('auth.html', login_error='Invalid honeypot value detected.', login_form=login_form, captcha_image_base64=session.get('captcha_image_base64'),login_honeypots=login_honeypots)
-        
+            return render_template('auth.html', login_error='Invalid honeypot value detected.', login_form=login_form, captcha_image_base64=session.get('captcha_image_base64'), login_honeypots=login_honeypots)
     if login_form.validate_on_submit() and validate_captcha(int(user_captcha_answer) if user_captcha_answer else None, captcha_answer):
         name = login_form.name.data
         password = login_form.password.data
+        role = login_form.role.data  # Get the selected role        
         user = login(name, password)
         if user:
+            if role != 'super_admin' and user['is_super_admin']:  # Prevent non-super admin from logging in as super admin
+                return render_template('auth.html', login_error='Invalid role.', login_form=login_form, captcha_image_base64=session.get('captcha_image_base64'), login_honeypots=login_honeypots)            
             csrf_token = session.get('_csrf_token')
             session.clear()  # Clear the session
             session['user'] = user
             session['user_id'] = generate_user_id(name)
             session['username'] = name
+            session['role'] = role  # Store the role in the session
+            session['is_super_admin'] = user['is_super_admin']  # Store user role in session
             session['last_activity'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             session.modified = True  # Mark session as modified to regenerate session ID
             session.permanent = True  # Make session permanent
@@ -292,14 +302,15 @@ def login_route():
             captcha_image.save(buffer, format='PNG')
             buffer.seek(0)
             captcha_image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
-            session.update({'captcha_answer': captcha_answer,'captcha_image_base64': captcha_image_base64})
+            session.update({'captcha_answer': captcha_answer, 'captcha_image_base64': captcha_image_base64})
             return render_template('auth.html', login_error='Invalid credentials', login_form=login_form, captcha_image_base64=captcha_image_base64, login_honeypots=login_honeypots)
+    # Handle invalid CAPTCHA case
     captcha_image, captcha_answer = generate_captcha()
     buffer = BytesIO()
     captcha_image.save(buffer, format='PNG')
     buffer.seek(0)
     captcha_image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
-    session.update({'captcha_answer': captcha_answer,'captcha_image_base64': captcha_image_base64})
+    session.update({'captcha_answer': captcha_answer, 'captcha_image_base64': captcha_image_base64})
     return render_template('auth.html', login_error='Invalid CAPTCHA', login_form=login_form, captcha_image_base64=captcha_image_base64, login_honeypots=login_honeypots)
 
 @app.route('/Dashboard')
@@ -404,4 +415,4 @@ def csrf_error(e):
     return render_template('Error-Page/500-Internal-Server-Error.html', user_ip=user_ip), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=8803)
+    app.run(debug=True, host='0.0.0.0', port=880)
