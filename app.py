@@ -5,7 +5,7 @@ from datetime import timedelta, datetime
 from collections import deque
 
 # Third-party imports
-from flask import Flask, render_template, redirect, session, request, make_response, jsonify, Response
+from flask import Flask, render_template, redirect, session, request, make_response, jsonify, Response, abort
 from flask_wtf import CSRFProtect
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -281,9 +281,15 @@ def login_route():
         role = login_form.role.data  # Get the selected role        
         user = login(name, password)
         if user:
-            if role != 'super_admin' and user['is_super_admin']:  # Prevent non-super admin from logging in as super admin
-                return render_template('auth.html', login_error='Invalid role.', login_form=login_form, captcha_image_base64=session.get('captcha_image_base64'), login_honeypots=login_honeypots)            
-            csrf_token = session.get('_csrf_token')
+            if role != 'super_admin' and user['is_super_admin']:  
+                captcha_image, captcha_answer = generate_captcha()
+                buffer = BytesIO()
+                captcha_image.save(buffer, format='PNG')
+                buffer.seek(0)
+                captcha_image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+                session.update({'captcha_answer': captcha_answer, 'captcha_image_base64': captcha_image_base64})
+                return render_template('auth.html', login_error='Invalid role.', login_form=login_form, captcha_image_base64=captcha_image_base64, login_honeypots=login_honeypots)  
+            session.get('_csrf_token')
             session.clear()  # Clear the session
             session['user'] = user
             session['user_id'] = generate_user_id(name)
@@ -304,7 +310,6 @@ def login_route():
             captcha_image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
             session.update({'captcha_answer': captcha_answer, 'captcha_image_base64': captcha_image_base64})
             return render_template('auth.html', login_error='Invalid credentials', login_form=login_form, captcha_image_base64=captcha_image_base64, login_honeypots=login_honeypots)
-    # Handle invalid CAPTCHA case
     captcha_image, captcha_answer = generate_captcha()
     buffer = BytesIO()
     captcha_image.save(buffer, format='PNG')
@@ -320,7 +325,7 @@ def dashboard():
         user = session['user']
         name = session['username']
         user_id = session['user_id']
-        return render_template('App/dashboard.html', user=user, user_id=user_id, name=name)
+        return render_template('Super-Admin/dashboard.html', user=user, user_id=user_id, name=name)
     return redirect('/')
 
 @app.route('/Database')
@@ -330,7 +335,7 @@ def database():
         user = session['user']
         name = session['username']
         user_id = session['user_id']
-    return render_template('App/database.html', user=user, user_id=user_id, name=name)
+    return render_template('Super-Admin/database.html', user=user, user_id=user_id, name=name)
 
 @app.route('/Forms')
 @limiter.limit(dynamic_rate_limit)
@@ -339,7 +344,7 @@ def form():
         user = session['user']
         name = session['username']
         user_id = session['user_id']
-    return render_template('App/form.html', user=user, user_id=user_id, name=name)
+    return render_template('Super-Admin/form.html', user=user, user_id=user_id, name=name)
 
 @app.route('/Logs')
 @limiter.limit(dynamic_rate_limit)
@@ -348,7 +353,7 @@ def logs():
         user = session['user']
         name = session['username']
         user_id = session['user_id']
-    return render_template('App/Logs.html', user=user, user_id=user_id, name=name)
+    return render_template('Super-Admin/Logs.html', user=user, user_id=user_id, name=name)
 
 @app.route('/Settings')
 @limiter.limit(dynamic_rate_limit)
@@ -357,7 +362,7 @@ def settings():
         user = session['user']
         name = session['username']
         user_id = session['user_id']
-    return render_template('App/settings.html', user=user, user_id=user_id, name=name)
+    return render_template('Super-Admin/settings.html', user=user, user_id=user_id, name=name)
 
 @app.route('/Documentation')
 @limiter.limit(dynamic_rate_limit)
@@ -366,7 +371,7 @@ def documentation():
         user = session['user']
         name = session['username']
         user_id = session['user_id']
-    return render_template('App/Documentation.html', user=user, user_id=user_id, name=name)
+    return render_template('Super-Admin/Documentation.html', user=user, user_id=user_id, name=name)
 
 @app.route('/logout', methods=['GET', 'POST'])
 @limiter.limit("200 per minute")
@@ -386,6 +391,13 @@ def keep_alive():
     return jsonify(message="Session kept alive"), 200
 
 #################### Error Handlers ######################
+
+@app.errorhandler(403)
+def forbidden_error(error):
+    user_ip = get_remote_address()
+    logging.warning(f"403 Forbidden error for IP: {user_ip}")
+    return render_template('Error-Page/403-Forbidden.html', user_ip=user_ip), 403
+
 @app.errorhandler(404)
 def not_found_error(error):
     user_ip = get_remote_address()
@@ -415,4 +427,4 @@ def csrf_error(e):
     return render_template('Error-Page/500-Internal-Server-Error.html', user_ip=user_ip), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=880)
+    app.run(debug=True, host='0.0.0.0', port=8800)

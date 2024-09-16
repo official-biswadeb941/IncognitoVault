@@ -1,4 +1,26 @@
-const _0x2181c6=_0x1c50;function _0x1c50(_0x5bb11e,_0x33dca6){const _0x117305=_0x1173();return _0x1c50=function(_0x1c5000,_0x130550){_0x1c5000=_0x1c5000-0x1ea;let _0x143459=_0x117305[_0x1c5000];return _0x143459;},_0x1c50(_0x5bb11e,_0x33dca6);}function _0x1173(){const _0x666353=['type','form','11008090CzvuPj','createElement','23145JNDFAG','click','sign-up-mode','addEventListener','1144AafniO','hidden','add','querySelector','1486461GBzHbL','996816MmEStf','sign-in-btn','9DCnotC','3514OysEDm','getElementById','3346902kDuaVI','307621DPJInu','classList','csrf_token','querySelectorAll','setAttribute','input','288ZloBTm'];_0x1173=function(){return _0x666353;};return _0x1173();}(function(_0x32a2a6,_0x9e09c6){const _0x3bc21f=_0x1c50,_0x510ee9=_0x32a2a6();while(!![]){try{const _0x3b551f=parseInt(_0x3bc21f(0x1ec))/0x1+parseInt(_0x3bc21f(0x200))/0x2+parseInt(_0x3bc21f(0x1ff))/0x3+-parseInt(_0x3bc21f(0x1f2))/0x4*(parseInt(_0x3bc21f(0x1f7))/0x5)+parseInt(_0x3bc21f(0x1eb))/0x6+-parseInt(_0x3bc21f(0x203))/0x7*(parseInt(_0x3bc21f(0x1fb))/0x8)+parseInt(_0x3bc21f(0x202))/0x9*(-parseInt(_0x3bc21f(0x1f5))/0xa);if(_0x3b551f===_0x9e09c6)break;else _0x510ee9['push'](_0x510ee9['shift']());}catch(_0x1ca1dc){_0x510ee9['push'](_0x510ee9['shift']());}}}(_0x1173,0x564aa),document[_0x2181c6(0x1fa)]('DOMContentLoaded',function(){const _0x1da43a=_0x2181c6,_0x4e0cbf=document[_0x1da43a(0x1ea)]('sign-up-btn'),_0x5d4414=document[_0x1da43a(0x1ea)](_0x1da43a(0x201)),_0x1b2e0e=document[_0x1da43a(0x1fe)]('.container');_0x4e0cbf[_0x1da43a(0x1fa)]('click',()=>{const _0x5915a8=_0x1da43a;_0x1b2e0e[_0x5915a8(0x1ed)][_0x5915a8(0x1fd)](_0x5915a8(0x1f9));}),_0x5d4414[_0x1da43a(0x1fa)](_0x1da43a(0x1f8),()=>{const _0x379ad2=_0x1da43a;_0x1b2e0e[_0x379ad2(0x1ed)]['remove'](_0x379ad2(0x1f9));});}));const csrfToken=document[_0x2181c6(0x1fe)]('meta[name=\x22csrf-token\x22]')['getAttribute']('content'),forms=document[_0x2181c6(0x1ef)](_0x2181c6(0x1f4));forms['forEach'](_0xfa671=>{const _0x1f2a1d=_0x2181c6,_0x41f4ac=document[_0x1f2a1d(0x1f6)](_0x1f2a1d(0x1f1));_0x41f4ac[_0x1f2a1d(0x1f0)](_0x1f2a1d(0x1f3),_0x1f2a1d(0x1fc)),_0x41f4ac[_0x1f2a1d(0x1f0)]('name',_0x1f2a1d(0x1ee)),_0x41f4ac[_0x1f2a1d(0x1f0)]('value',csrfToken),_0xfa671['appendChild'](_0x41f4ac);});
+document.addEventListener('DOMContentLoaded', function() {
+    const signInBtn = document.getElementById('sign-in-btn');
+    const container = document.querySelector('.container');
+
+    if (signInBtn && container) {
+        signInBtn.addEventListener('click', () => {
+            container.classList.remove('sign-up-mode');
+        });
+    }
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    const forms = document.querySelectorAll('form');
+
+    forms.forEach(form => {
+        const input = document.createElement('input');
+        input.setAttribute('type', 'hidden');
+        input.setAttribute('name', 'csrf_token');
+        input.setAttribute('value', csrfToken);
+        form.appendChild(input);
+    });
+});
+
+
 
 //To keep the login button disabled until the user fills out the form.
 document.addEventListener('DOMContentLoaded', function() {
@@ -49,4 +71,53 @@ document.getElementById('loginForm').addEventListener('submit', function(event) 
     document.getElementById('loginForm').submit(); // Uncomment for real form submission
   }, 3000); // 3 second delay for testing
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+  const roleDropdown = document.getElementById('role');
+  const body = document.body;
+  const loginForm = document.querySelector('.login-form');
+  const formControls = document.querySelectorAll('.form-control');
+  const loader = document.getElementById('loader-background');
+
+  roleDropdown.addEventListener('change', function() {
+    // Remove any existing theme class from body, login form, form controls, and loader
+    body.classList.remove('super-admin-theme', 'admin-theme', 'user-theme');
+    loginForm.classList.remove('super-admin-theme', 'admin-theme', 'user-theme');
+    formControls.forEach(function(formControl) {
+      formControl.classList.remove('super-admin-theme', 'admin-theme', 'user-theme');
+    });
+    loader.classList.remove('super-admin-theme', 'admin-theme', 'user-theme');
+
+    // Apply the selected theme based on the role
+    switch (this.value) {
+      case 'super_admin':
+        body.classList.add('super-admin-theme');
+        loginForm.classList.add('super-admin-theme');
+        formControls.forEach(function(formControl) {
+          formControl.classList.add('super-admin-theme');
+        });
+        loader.classList.add('super-admin-theme');
+        break;
+      case 'admin':
+        body.classList.add('admin-theme');
+        loginForm.classList.add('admin-theme');
+        formControls.forEach(function(formControl) {
+          formControl.classList.add('admin-theme');
+        });
+        loader.classList.add('admin-theme');
+        break;
+      case 'user':
+        body.classList.add('user-theme');
+        loginForm.classList.add('user-theme');
+        formControls.forEach(function(formControl) {
+          formControl.classList.add('user-theme');
+        });
+        loader.classList.add('user-theme');
+        break;
+      default:
+        break;
+    }
+  });
+});
+
 

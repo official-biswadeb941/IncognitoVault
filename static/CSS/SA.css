@@ -45,7 +45,7 @@ a {
     align-items: center;
     justify-content: space-between;
     padding: 0 1rem;
-    background: linear-gradient(135deg, #0f0c29, #0e0c1d, #24243e);
+    background: linear-gradient(135deg, #000000, #1d1e25, #000000);
     border-radius: 10px; /* Optional: Rounded corners */
     z-index: var(--z-fixed);
     transition: .5s;
@@ -93,7 +93,7 @@ a {
     left: -30%;
     width: var(--nav-width);
     height: 100vh;
-    background: linear-gradient(135deg, #0f0c29, #0e0c1d, #24243e);
+    background: linear-gradient(135deg, #000000, #1d1e25, #000000);
     backdrop-filter: blur(30px); /* Blur effect */
     -webkit-backdrop-filter: blur(30px); /* For Safari */
     padding: .5rem 1rem 0 0;
@@ -181,7 +181,7 @@ a {
 /* Custom Style for Main Body */
 .height-100 {
     height: auto;
-    background: linear-gradient(135deg, #09071a, #211e44, #161625);
+    background: linear-gradient(135deg, #000000, #1d1e25, #000000);
     backdrop-filter: blur(20px); /* Blur effect */
     -webkit-backdrop-filter: blur(20px); /* For Safari */
     border-radius: 10px; /* Optional: Rounded corners */
@@ -191,7 +191,7 @@ a {
 
 /* Base card styling */
 .card {
-    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    background: linear-gradient(135deg, #000000, #1d1e25, #000000);
     backdrop-filter: blur(10px);
     border-radius: 15px;
     padding: 20px;
@@ -203,9 +203,9 @@ a {
 .card-elegant {
     border: none;
     border-radius: 15px; /* Rounded corners */
-    box-shadow: 0 8px 16px rgba(5, 31, 71, 0.349); /* Deep shadow for elegance */
+    box-shadow: 0 8px 16px rgba(2, 11, 26, 0.514); /* Deep shadow for elegance */
     overflow: hidden; /* Ensure the shadow and rounded corners work well */
-    background: rgba(2, 31, 92, 0.459); /* Transparent white background */
+    background: rgba(0, 0, 0, 0.459); /* Transparent white background */
     backdrop-filter: blur(25px); /* Frosted glass effect */
     -webkit-backdrop-filter: blur(25px); /* For Safari */
     transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transitions */
@@ -215,7 +215,7 @@ a {
 
 .card-elegant:hover {
     transform: translateY(-5px); /* Lift effect on hover */
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3); /* Enhanced shadow on hover */
+    box-shadow: 0 12px 24px rgb(41, 41, 41); /* Enhanced shadow on hover */
 }
 
 .card-body {
@@ -308,12 +308,12 @@ i {
 
 .btn-primary {
     border-radius: 10px;
-    background-color: #007bff;
+    background-color: #000000cf;
     border: none;
 }
 
 .btn-primary:hover {
-    background-color: #0056b3;
+    background-color: #111111cf;
 }
 
 /* Custom styles for the notification panel */
@@ -372,7 +372,7 @@ i {
     width: 93.5% !important;
     max-width: 95% !important;
     min-width: 60% !important;
-    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    background: linear-gradient(135deg, #000000, #1d1e25, #000000);
     color: #ffffff;
     padding: 10px;
     box-sizing: border-box;

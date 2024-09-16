@@ -12,6 +12,20 @@ body {
     position: relative;
   }
 
+
+  /* CSS - auth.css */
+  .super-admin-theme {
+    background: linear-gradient(135deg, #000000, #1d1e25, #000000); /* Color Name: Shadow Realm */
+  }
+  
+  .admin-theme {
+    background: linear-gradient(135deg, #571e63, #190855, #571e63); /* Color Name: Majestic Twilight */
+  }
+  
+  .user-theme {
+    background: linear-gradient(135deg, #0f1e15, #1e4d31, #0f1e15); /* Color Name: Emerald Grove */
+  }
+
   h4 {
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     font-weight: bold;
@@ -151,7 +165,6 @@ body {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: linear-gradient(180deg, #090718d2, #1c193bc2, #161625ce);
   z-index: 9998; /* Behind the loader, above everything else */
   display: none;
 }
