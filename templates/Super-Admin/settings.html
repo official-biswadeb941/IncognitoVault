@@ -6,46 +6,55 @@
 
 {% block content %}
 
-      <!-- Password Changing Form -->
-      <div class="card">
-        <div class="card-header">
-          <h5 class="card-title">Change Password</h5>
-        </div>
-        <div class="card-body">
-          <form action="/change-password" method="POST">
-            <div class="mb-3">
-              <label for="current-password" class="form-label">Current Password</label>
-              <input type="password" class="form-control" id="current-password" name="current-password" required>
-            </div>
-            <div class="mb-3">
-              <label for="new-password" class="form-label">New Password</label>
-              <input type="password" class="form-control" id="new-password" name="new-password" required>
-            </div>
-            <div class="mb-3">
-              <label for="confirm-password" class="form-label">Confirm New Password</label>
-              <input type="password" class="form-control" id="confirm-password" name="confirm-password" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Change Password</button>
-          </form>
-        </div>
-      </div>
-
-      <!-- Notification Card -->
-      <div class="card">
-        <div class="card-header">
-          <h5 class="card-title">Notifications</h5>
-        </div>
-        <div class="card-body">
-          <div id="notification" class="notification"></div>
-          <div class="notification-card-header">Notification History</div>
-          <div id="notification-history-list">
-            <!-- This section will be populated with notification items dynamically -->
-          </div>
-        </div>
-      </div>
-
-      <!-- SMTP and API Configuration Form -->
+<!-- Password Changing Form -->
 <div class="card">
+  <div class="card-header">
+    <h5 class="card-title">Change Details</h5>
+  </div>
+  <div class="card-body">
+    <form action="/change-details" method="POST">
+      <div class="mb-3">
+        <label for="current-username" class="form-label">Enter Your Current Username</label>
+        <input type="text" class="form-control" id="current-username" name="current-username" required>
+      </div>
+      <div class="mb-3">
+        <label for="updated-username" class="form-label">Enter Your New Username</label>
+        <input type="text" class="form-control" id="updated-username" name="updated-username" required>
+      </div>
+      <div class="mb-3">
+        <label for="current-password" class="form-label">Enter Your Current Password</label>
+        <input type="password" class="form-control" id="current-password" name="current-password" required>
+      </div>
+      <div class="mb-3">
+        <label for="new-password" class="form-label">Enter Your New Password</label>
+        <input type="password" class="form-control" id="new-password" name="new-password" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Submit Details</button>
+    </form>
+  </div>
+</div>
+
+<!-- Dynamic Registration Form -->
+<div class="card mt-4">
+  <div class="card-header">
+    <h5 class="card-title">Custom Registration Form</h5>
+  </div>
+  <div class="card-body">
+    <form id="registration-form">
+      <!-- Dynamically added fields will appear here -->
+      <div id="dynamic-fields"></div>
+
+      <!-- Enhanced Add Field button with Font Awesome -->
+      <button type="button" class="btn btn-success mt-3" onclick="addField()">
+        <i class="fas fa-plus-circle"></i> Add Field
+      </button>
+      <button type="submit" class="btn btn-primary mt-3">Save Form</button>
+    </form>
+  </div>
+</div>
+
+<!-- SMTP and API Configuration Form -->
+<div class="card mt-4">
   <div class="card-header">
     <h5 class="card-title">Email Configuration</h5>
   </div>
@@ -81,7 +90,6 @@
       </form>
     </div>
     <br>
-    <!-- Option for API Configuration -->
     <div class="mb-3 form-check">
       <input type="radio" class="form-check-input" id="api-option" name="api-option" onclick="toggleEmailOption('api')">
       <label class="form-check-label" for="api-option">Send Mail via API</label>
@@ -101,9 +109,6 @@
     </div>
   </div>
 </div>
-</div>
-</div>
 
 
-
-  {% endblock %}
+{% endblock %}

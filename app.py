@@ -221,6 +221,14 @@ def save_session(response: Response):
     response.set_cookie('session_id', session.get('session_id', ''), max_age=SESSION_TIMEOUT, httponly=True, secure=True, samesite='Lax')
     return response
 
+@app.before_request
+def restrict_to_super_admin():
+    restricted_routes = ['/Dashboard', '/Database', '/Forms', '/Logs', '/Settings', '/Documentation']
+    if 'user' not in session or not session.get('is_super_admin'):
+        if request.path in restricted_routes:
+            return abort(403)  # Return a 403 Forbidden error for unauthorized access
+
+
 #################### Authentication Routes #######################
 def generate_honeypot_fields_for_fields(fields, length=64):
     return {f'{field}_hpot': ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(length))

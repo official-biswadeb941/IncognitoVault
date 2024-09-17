@@ -203,3 +203,27 @@ $(document).ready(function(){
     console.log('Dropdown button clicked');
   });
 });
+
+//Dynamic Registration Form
+let fieldCount = 0;
+
+function addField() {
+  fieldCount++;
+  const dynamicFields = document.getElementById('dynamic-fields');
+  const fieldHTML = `
+    <div class="mb-3" id="field-${fieldCount}">
+      <label for="custom-field-${fieldCount}" class="form-label">Field Name</label>
+      <input type="text" class="form-control" id="custom-field-${fieldCount}" name="custom-field-${fieldCount}" required>
+      <!-- Dustbin icon for delete -->
+      <button type="button" class="btn btn-danger mt-2" onclick="removeField(${fieldCount})">
+        <i class="fas fa-trash-alt"></i> Remove Field
+      </button>
+    </div>
+  `;
+  dynamicFields.insertAdjacentHTML('beforeend', fieldHTML);
+}
+
+function removeField(id) {
+  const field = document.getElementById(`field-${id}`);
+  field.remove();
+}
