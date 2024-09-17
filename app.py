@@ -17,10 +17,10 @@ from urllib.parse import urlparse
 import pymysql
 
 # Custom module imports
-from modules.caching import configure_cache, push_data_with_ttl, pop_data, get_redis_connection, get_redis_uri
-from modules.session import *
-from modules.form import LoginForm
-from modules.captcha import generate_captcha, validate_captcha
+from Modules.caching import configure_cache, push_data_with_ttl, pop_data, get_redis_connection, get_redis_uri
+from Modules.session import *
+from Modules.form import LoginForm
+from Modules.captcha import generate_captcha, validate_captcha
 
 # functools is not removed since it's probably used for decorators (verify before removing)
 from functools import wraps
