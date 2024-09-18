@@ -133,7 +133,7 @@ def create_super_admin():
         with conn.cursor() as cursor:
             cursor.execute("SHOW TABLES LIKE 'super_admin'")
             if cursor.fetchone():
-                print("Super admin table already exists.")
+                return None
             else:
                 sql = """
                 CREATE TABLE super_admin (
@@ -146,11 +146,9 @@ def create_super_admin():
                 """
                 cursor.execute(sql)
                 conn.commit()
-                print("Super admin table created.")
             cursor.execute("SELECT COUNT(*) FROM super_admin WHERE is_super_admin = TRUE")
             super_admin_exists = cursor.fetchone()['COUNT(*)'] > 0
             if super_admin_exists:
-                print("Super admin user already exists. No further entries allowed.")
                 return 
             config_folder = 'Config'
             credentials_file = os.path.join(config_folder, 'creds.json')
@@ -164,7 +162,6 @@ def create_super_admin():
                 (default_username, default_password, default_role)
             )
             conn.commit()
-            print("Default super admin user created.")
     except Exception as e:
         print(f"Error creating table or default admin user: {e}")
     finally:
@@ -455,4 +452,5 @@ def csrf_error(e):
     return render_template('Error-Page/500-Internal-Server-Error.html', user_ip=user_ip), 500
 
 if __name__ == '__main__':
+    print ("Starting Server...")
     app.run(debug=True, host='0.0.0.0', port=8800)
