@@ -15,6 +15,8 @@ from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 from urllib.parse import urlparse
 import pymysql
+from dbutils.pooled_db import PooledDB
+
 
 # Custom module imports
 from Modules.caching import configure_cache, push_data_with_ttl, pop_data, get_redis_connection, get_redis_uri
@@ -70,7 +72,14 @@ with open('Database/DB.json', 'r') as f:
 ssl_config = db_config.get('ssl', {})
 ssl_config['ca'] = os.path.join('Database', ssl_config.get('ca', 'ca.pem'))
 
-db = pymysql.connect(
+# Initialize the connection pool
+pool = PooledDB(
+    creator=pymysql,  # The database module to use
+    maxconnections=20,  # The maximum number of connections allowed
+    mincached=5,  # The minimum number of connections to be cached
+    maxcached=10,  # The maximum number of connections to be cached
+    maxshared=10,  # The maximum number of shared connections
+    blocking=True,  # Whether to block if the pool is full
     host=db_config['host'],
     user=db_config['user'],
     password=db_config['password'],
@@ -79,6 +88,7 @@ db = pymysql.connect(
     cursorclass=pymysql.cursors.DictCursor,
     ssl=ssl_config
 )
+
 
 ph = PasswordHasher()
 
@@ -113,9 +123,14 @@ def dynamic_rate_limit():
         return "60 per minute"
 
 ####################### Utility Functions #####################
+
+def get_db_connection():
+    return pool.connection()
+
 def create_super_admin():
     try:
-        with db.cursor() as cursor:
+        conn = get_db_connection()
+        with conn.cursor() as cursor:
             cursor.execute("SHOW TABLES LIKE 'super_admin'")
             if cursor.fetchone():
                 print("Super admin table already exists.")
@@ -130,7 +145,7 @@ def create_super_admin():
                 )
                 """
                 cursor.execute(sql)
-                db.commit()
+                conn.commit()
                 print("Super admin table created.")
             cursor.execute("SELECT COUNT(*) FROM super_admin WHERE is_super_admin = TRUE")
             super_admin_exists = cursor.fetchone()['COUNT(*)'] > 0
@@ -148,11 +163,12 @@ def create_super_admin():
                 "INSERT INTO super_admin (username, password, role, is_super_admin) VALUES (%s, %s, %s, TRUE)",
                 (default_username, default_password, default_role)
             )
-            db.commit()
+            conn.commit()
             print("Default super admin user created.")
     except Exception as e:
         print(f"Error creating table or default admin user: {e}")
-
+    finally:
+        conn.close()
 
 def hash_password(password):
     return ph.hash(password)
@@ -237,7 +253,8 @@ def generate_honeypot_fields_for_fields(fields, length=64):
 
 def user_exists(name, email):
     try:
-        with db.cursor() as cursor:
+        conn = get_db_connection()
+        with conn.cursor() as cursor:
             sql = "SELECT id FROM super_admin WHERE name = %s OR email = %s"
             cursor.execute(sql, (name, email))
             return cursor.fetchone() is not None
@@ -247,7 +264,8 @@ def user_exists(name, email):
 
 def login(username, password):
     try:
-        with db.cursor() as cursor:
+        conn = get_db_connection()
+        with conn.cursor() as cursor:
             sql = "SELECT id, password, is_super_admin FROM super_admin WHERE username = %s"
             cursor.execute(sql, (username,))
             user = cursor.fetchone()
@@ -257,6 +275,8 @@ def login(username, password):
     except Exception as e:
         print(f"Error logging in: {e}")
         return None
+    finally:
+        conn.close()
 
 #################### Route Handlers ######################
 @limiter.limit(dynamic_rate_limit)
