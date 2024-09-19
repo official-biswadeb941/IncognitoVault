@@ -206,6 +206,12 @@ def set_security_headers(response):
     response.headers['Server'] = 'None'
     return response
 
+def push_data_with_dynamic_ttl(redis_conn, session_id, session_data, timeout):
+    # Store the entire session data as a JSON string
+    session_data_json = json.dumps(session_data)
+    redis_conn.set(f'session:{session_data}', session_data_json, ex=timeout)
+    print(f"Pushed session data to Redis for session_data={session_data}: {session_data_json}")
+
 @app.before_request
 def manage_session_and_https():
     if not request.is_secure and app.config['ENV'] != 'development':
@@ -216,22 +222,23 @@ def manage_session_and_https():
                 response = Response(status=301)
                 response.headers['Location'] = secure_url
                 return response
+
     session_id = request.cookies.get('session_id')
     if session_id:
         session_data = redis_conn.get(f'session:{session_id}')
         if session_data:
             session.update(json.loads(session_data.decode('utf-8')))
+            redis_conn.expire(f'session:{session_data}', SESSION_TIMEOUT)
     else:
         session_id = generate_session_key(length=128)
-        session['session_id'] = session_id
+        session['session_data'] = session_id
 
 @app.after_request
 def save_session(response: Response):
     if 'session_id' in session:
         session_data = json.dumps(dict(session))
-        redis_conn.set(f'session:{session["session_id"]}', session_data)
-        redis_conn.expire(f'session:{session["session_id"]}', SESSION_TIMEOUT)
-    response.set_cookie('session_id', session.get('session_id', ''), max_age=SESSION_TIMEOUT, httponly=True, secure=True, samesite='Lax')
+        push_data_with_dynamic_ttl(redis_conn, f'session:{session["session_id"]}', session_data, SESSION_TIMEOUT)
+        response.set_cookie('session_id', session.get('session_id', ''), max_age=SESSION_TIMEOUT, httponly=True, secure=True, samesite='Lax')
     return response
 
 @app.before_request
@@ -324,6 +331,9 @@ def login_route():
             session['last_activity'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             session.modified = True  # Mark session as modified to regenerate session ID
             session.permanent = True  # Make session permanent
+            session_data = json.dumps({'user': user, 'user_id': session['user_id'], 'username': session['username'], 'role': session['role'], 'last_activity': session['last_activity']})
+            push_data_with_ttl(redis_conn, f"session:{name}", session_data, timeout=1800)  # 30-minute TTL
+            print(f"Pushed session data to Redis: {session_data}")
             response = make_response(redirect('/Dashboard'))
             response.set_cookie('session_id', session.get('session_id', ''), max_age=SESSION_TIMEOUT, httponly=True, secure=True, samesite='Lax')  # Set secure cookie
             return response
@@ -401,13 +411,16 @@ def documentation():
 @app.route('/logout', methods=['GET', 'POST'])
 @limiter.limit("200 per minute")
 def logout_route():
-    if 'user' in session:
-        for key in ['user', 'name','user_id', 'last_activity']:
-            session.pop(key, None)
-        response = make_response(redirect('/'))
-        response.set_cookie('csrf_token', '', expires=0, secure=True, httponly=True, samesite='Lax')
-        return response
-    return redirect('/')
+    session_data = session.get('session_data')
+    if session_data:
+        redis_conn.delete(f'session:{session_data}')
+        print(f"Popped session data from Redis for session_data={session_data}")
+
+    session.clear()
+    response = make_response(redirect('/'))
+    response.set_cookie('session_data', '', expires=0, secure=True, httponly=True, samesite='Lax')
+    response.set_cookie('csrf_token', '', expires=0, secure=True, httponly=True, samesite='Lax')
+    return response
 
 @app.route('/keep_alive', methods=['POST'])
 @limiter.limit("200 per minute")
