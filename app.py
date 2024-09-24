@@ -212,6 +212,7 @@ def push_data_with_dynamic_ttl(redis_conn, session_id, session_data, timeout):
 
 @app.before_request
 def manage_session_and_https():
+    # Redirect to HTTPS if not secure and not in development
     if not request.is_secure and app.config['ENV'] != 'development':
         url_parts = urlparse(request.url)
         if url_parts.scheme == "http":
@@ -220,15 +221,25 @@ def manage_session_and_https():
                 response = Response(status=301)
                 response.headers['Location'] = secure_url
                 return response
+
     session_id = request.cookies.get('session_id')
     if session_id:
-        session_data = redis_conn.get(f'session:{session_id}')
-        if session_data:
-            session.update(json.loads(session_data.decode('utf-8')))
-            redis_conn.expire(f'session:{session_id}', SESSION_TIMEOUT)  # Refresh TTL for active session
+        try:
+            session_data = redis_conn.get(f'session:{session_id}')
+            if session_data:
+                decoded_data = session_data.decode('utf-8')
+                cleaned_data = decoded_data[1:-1].replace('\\"', '"')
+                session.update(json.loads(cleaned_data))
+                redis_conn.expire(f'session:{session_id}', SESSION_TIMEOUT)
+            else:
+                print("No session data found for session_id:", session_id)
+        except (json.JSONDecodeError, AttributeError) as e:
+            print("Error loading session data:", e)
     else:
+        # Generate a new session ID if none exists
         session_id = generate_session_key(length=128)
         session['session_id'] = session_id
+
 
 @app.after_request
 def save_session(response: Response):
