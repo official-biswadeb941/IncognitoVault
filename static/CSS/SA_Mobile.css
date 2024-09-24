@@ -1,0 +1,66 @@
+/* Mobile-specific styles for the navbar */
+@media (max-width: 768px) {
+    .header{
+        display: none !important;
+    }
+
+    .d-md-none {
+        display: block; /* Ensure this div is shown on mobile */
+    }
+
+    .mobile-nav {
+        background: linear-gradient(135deg, #000000, #1d1e25, #000000);
+        backdrop-filter: blur(30px); /* Blur effect */
+        -webkit-backdrop-filter: blur(30px); /* For Safari */
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 1000;
+    }
+    
+    .navbar {
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+        padding: 10px; /* Padding for the navbar */
+    }
+
+    .navbar-brand {
+        font-size: 1.5rem; /* Brand font size */
+        font-weight: bold; /* Bold brand text */
+        color: #ffffff; /* Dark text color */
+    }
+    
+    /* Styles for nav links */
+    .nav-link {
+        color: #ffffff; /* Dark color for nav links */
+        padding: 10px 15px; /* Padding for links */
+        font-weight: bold;
+        text-align: center; /* Center text in links */
+        display: block; /* Make links full-width */
+        border-radius: 5px; /* Rounded corners for links */
+        transition: background-color 0.3s; /* Smooth background change */
+    }
+
+    .nav-link:hover {
+        background-color: rgba(0, 0, 0, 0.1); /* Light hover effect */
+    }
+
+    /* Collapse behavior for mobile nav */
+    .collapse {
+        padding: 15px 0; /* Padding for the collapse area */
+    }
+
+    .collapse .nav-item {
+        margin-bottom: 10px; /* Spacing between nav items */
+        content: "";
+        bottom: 0; /* Position the line at the bottom */
+        background: linear-gradient(to right, transparent, /*#007bff,*/#1d1e25, transparent); /* Adjust colors as needed */
+        opacity: 0.8; /* Make it slightly transparent if desired */
+    }
+
+    /* Additional styles for active links */
+    .nav-link.active {
+        background-color: #e9ecef; /* Highlight for active link */
+        color: #007bff; /* Primary color for active link */
+    }
+}

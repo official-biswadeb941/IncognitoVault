@@ -10,6 +10,7 @@ from flask_wtf import CSRFProtect
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_session import Session 
+from flask_cors import CORS
 from werkzeug.exceptions import TooManyRequests, BadRequest
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
@@ -54,6 +55,7 @@ app.config['SESSION_REDIS'] = redis_conn
 Session(app)
 csrf = CSRFProtect(app)
 csrf.init_app(app)
+CORS(app)
 
 limiter = Limiter(
     key_func=get_remote_address,
@@ -203,7 +205,6 @@ def set_security_headers(response):
     response.headers['Permissions-Policy'] = 'geolocation=(), camera=(), microphone=()'
     if app.config['ENV'] == 'production':
         response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
-    response.headers['Server'] = 'None'
     return response
 
 def push_data_with_dynamic_ttl(redis_conn, session_id, session_data, timeout):
@@ -236,7 +237,6 @@ def manage_session_and_https():
         except (json.JSONDecodeError, AttributeError) as e:
             print("Error loading session data:", e)
     else:
-        # Generate a new session ID if none exists
         session_id = generate_session_key(length=128)
         session['session_id'] = session_id
 
