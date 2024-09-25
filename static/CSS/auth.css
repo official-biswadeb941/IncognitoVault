@@ -2,12 +2,12 @@
 
 body {
     background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    background-size: auto;
     color: #fff;
     height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: hidden;
     margin: 0;
     position: relative;
   }
@@ -50,7 +50,7 @@ body {
   .login-container {
     position: relative;
     z-index: 2;
-    width: 90%;
+    width: 70%;
     max-width: 400px;
   }
 
