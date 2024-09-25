@@ -1,5 +1,44 @@
+@media screen and (min-width: 600px) {
+    body {
+        margin: calc(var(--header-height) + 1rem) 0 0 0;
+        background-image: url(https://images.unsplash.com/photo-1610447158291-d917870bf750?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8NGslMjBmb3Jlc3R8ZW58MHx8MHx8fDA%3D);
+    }
+
+    .header {
+        height: calc(var(--header-height) + 1rem);
+        padding: 0 2rem 0 calc(var(--nav-width) + 2rem);
+    }
+
+    .header_img {
+        width: 40px;
+        height: 40px;
+    }
+
+    .header_img img {
+        width: 45px;
+    }
+
+    .l-navbar {
+        left: 0;
+        padding: 1rem 1rem 0 0;
+    }
+
+    .show {
+        width: calc(var(--nav-width) + 156px);
+    }
+
+    .body-pd {
+        padding-left: calc(var(--nav-width) + 188px);
+    }
+}
+
 /* Mobile-specific styles for the navbar */
 @media (max-width: 768px) {
+
+    body{
+       margin-top: 50px !important;
+       padding: 10px;
+    }
     .header{
         display: none !important;
     }
@@ -14,7 +53,7 @@
         -webkit-backdrop-filter: blur(30px); /* For Safari */
         position: fixed;
         top: 0;
-        left: 0;
+        right: 0; /* Adjusting to right */
         width: 100%;
         z-index: 1000;
     }
@@ -36,6 +75,7 @@
         padding: 10px 15px; /* Padding for links */
         font-weight: bold;
         text-align: center; /* Center text in links */
+        text-align: left;
         display: block; /* Make links full-width */
         border-radius: 5px; /* Rounded corners for links */
         transition: background-color 0.3s; /* Smooth background change */
@@ -45,22 +85,57 @@
         background-color: rgba(0, 0, 0, 0.1); /* Light hover effect */
     }
 
-    /* Collapse behavior for mobile nav */
+    /* Collapse behavior for mobile nav - Right Slide */
     .collapse {
         padding: 15px 0; /* Padding for the collapse area */
+        transform: translateX(100%); /* Initially hidden off-screen */
+        transition: transform 0.3s ease-in-out; /* Smooth transition */
+        left: auto;
+        right: 0;
+        position: fixed; /* Fixed position */
+        top: 60px; /* Below the navbar */
+        background: linear-gradient(135deg, #000000, #1d1e25, #000000);
+        width: 250px; /* Set width for the dropdown */
     }
 
+    .navbar-toggler[aria-expanded="true"] + .collapse {
+        transform: translateX(0); /* Slide in when expanded */
+    }
+
+    /* Spacing between nav items */
     .collapse .nav-item {
         margin-bottom: 10px; /* Spacing between nav items */
         content: "";
         bottom: 0; /* Position the line at the bottom */
-        background: linear-gradient(to right, transparent, /*#007bff,*/#1d1e25, transparent); /* Adjust colors as needed */
+        background: linear-gradient(to right, transparent, #1d1e25, transparent); 
         opacity: 0.8; /* Make it slightly transparent if desired */
     }
 
-    /* Additional styles for active links */
-    .nav-link.active {
-        background-color: #e9ecef; /* Highlight for active link */
-        color: #007bff; /* Primary color for active link */
+    .three-dots {
+        cursor: pointer;
+        font-size:30px; /* Adjust size as needed */
+        transition: linear 1s /* Transition for transform */
     }
+    
+    /* Initial vertical state */
+    .vertical {
+        transform: rotate(0deg); /* Start with vertical position */
+    }
+    
+    /* Active horizontal state */
+    .horizontal {
+        transform: rotate(90deg); /* Rotate to horizontal position */
+    }
+    
+    /* Remove focus outline */
+    .navbar-toggler:focus {
+        outline: none; /* Remove focus outline */
+    }
+    
+    .navbar-toggler:active {
+        outline: none; /* Remove outline when active */
+    }
+    
+    
+  
 }

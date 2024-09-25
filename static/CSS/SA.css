@@ -21,8 +21,8 @@
 
 body {
     position: relative;
-    margin: var(--header-height) 0 0 0;
-    padding: 0 1rem;
+    padding-right: 20px;
+    padding-left: calc(var(--nav-width) + 2rem);
     font-family: var(--body-font);
     font-size: var(--normal-font-size);
     background-size: cover;
@@ -365,61 +365,30 @@ i {
     color: white !important;
 }
 
-/* Custom Style for Footer */
+
 .footer {
-    position: fixed;
+    position: sticky;
     bottom: 0;
-    width: 93.5% !important;
-    max-width: 95% !important;
-    min-width: 60% !important;
+    left: 0;
+    right: 0;
     background: linear-gradient(135deg, #000000, #1d1e25, #000000);
     color: #ffffff;
     padding: 10px;
     box-sizing: border-box;
     border-top-left-radius: 18px;
     border-top-right-radius: 18px;
+    width: auto;
+    transform: translateY(100%); /* Initially off-screen */
+    transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55); /* Bouncy transition */
 }
+
+body:has(.footer:in-view) .footer {
+    transform: translateY(0); /* Slide into view */
+}
+
 .date-time{
     margin-left: 1000px !important;
     font-size: 18px;
     font-weight: bold;
     font-family: 'Gill Sans';
-}
-
-/* Dynamic Registration Form */
-
-
-/*@media screen and (min-width: 600px) {
-    body {
-        margin: calc(var(--header-height) + 1rem) 0 0 0;
-        padding-left: calc(var(--nav-width) + 2rem);
-        background-image: url(https://images.unsplash.com/photo-1610447158291-d917870bf750?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8NGslMjBmb3Jlc3R8ZW58MHx8MHx8fDA%3D);
-    }
-
-    .header {
-        height: calc(var(--header-height) + 1rem);
-        padding: 0 2rem 0 calc(var(--nav-width) + 2rem);
-    }
-
-    .header_img {
-        width: 40px;
-        height: 40px;
-    }
-
-    .header_img img {
-        width: 45px;
-    }
-
-    .l-navbar {
-        left: 0;
-        padding: 1rem 1rem 0 0;
-    }
-
-    .show {
-        width: calc(var(--nav-width) + 156px);
-    }
-
-    .body-pd {
-        padding-left: calc(var(--nav-width) + 188px);
-    }
 }

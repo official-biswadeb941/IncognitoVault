@@ -129,55 +129,22 @@ csrfInput.setAttribute('value', csrfToken);
 form.appendChild(csrfInput);
 });
 
-// Function to show notifications
-function showNotification(message, type) {
-  var notification = document.getElementById('notification');
-  notification.className = 'notification ' + type;
-  notification.textContent = message;
-  notification.style.display = 'block';
-  // Add notification to history
-  addNotificationToHistory(message, type);
-  // Hide notification after 5 seconds
-  setTimeout(function () {
-    notification.style.display = 'none';
-  }, 5000);
-}
+const toggler = document.querySelector('.navbar-toggler');
+const dots = document.getElementById('three-dots');
 
-// Function to add notifications to history
-function addNotificationToHistory(message, type) {
-  var notificationHistoryList = document.getElementById('notification-history-list');
-  var newNotificationItem = document.createElement('div');
-  newNotificationItem.className = 'notification-item ' + type;
-  newNotificationItem.textContent = message;
-  notificationHistoryList.appendChild(newNotificationItem);
-}
-// Function to save notifications to localStorage
-function saveNotification(message, type) {
-  var notifications = JSON.parse(localStorage.getItem('notifications')) || [];
-  notifications.push({ message: message, type: type });
-  localStorage.setItem('notifications', JSON.stringify(notifications));
-}
-// Function to load notifications from localStorage
-function loadNotifications() {
-  var notifications = JSON.parse(localStorage.getItem('notifications')) || [];
-  notifications.forEach(function (notification) {
-    addNotificationToHistory(notification.message, notification.type);
-  });
-}
-// Demo: Trigger a notification and save it
-window.onload = function () {
-  var demoMessage = 'This is a persistent demo notification!';
-  var demoType = 'info';
-  // Check if the demo notification already exists
-  var notifications = JSON.parse(localStorage.getItem('notifications')) || [];
-  var demoExists = notifications.some(notification => notification.message === demoMessage);
-  if (!demoExists) {
-    showNotification(demoMessage, demoType);
-    saveNotification(demoMessage, demoType);
-  }
-  // Load existing notifications
-  loadNotifications();
-};
+// Initially set the dots to vertical
+dots.classList.add('vertical');
+
+toggler.addEventListener('click', function() {
+    if (dots.classList.contains('vertical')) {
+        dots.classList.remove('vertical');
+        dots.classList.add('horizontal');
+    } else {
+        dots.classList.remove('horizontal');
+        dots.classList.add('vertical');
+    }
+});
+
 
 function updateDateTime() {
   const now = new Date();

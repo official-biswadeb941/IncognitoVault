@@ -64,7 +64,7 @@
             <i class='bx bx-book nav_icon'></i>
             <span class="nav_name"><strong>Logs</strong></span>
           </a>
-          <a href="/Documentation" class="nav_link" id="logs-link" title="App Documentation">
+          <a href="/Documentation" class="nav_link" id="documentation-link" title="App Documentation">
             <i class="bx bx-file nav_icon"></i>
             <span class="nav_name"><strong>Documentation</strong></span>
           </a>
@@ -82,32 +82,53 @@
       <div class="container-fluid">
         <a class="navbar-brand" href="javascript:void(0);"><u>Incognito Vault</u></a>
         <button class="navbar-toggler custom-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mobile-nav" aria-controls="mobile-nav" aria-expanded="false" aria-label="Toggle navigation">
-          <div class="header_toggle">
-            <i class='bx bx-menu' id="header-toggle"></i>      
-          </div>
+          <div class="three-dots" id="three-dots">
+            <i class='bx bx-dots-vertical-rounded'></i>
+        </div>
         </button>
         <div class="collapse navbar-collapse" id="mobile-nav">
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item">
-              <a class="nav-link" href="/Dashboard">Dashboard</a>
+              <a href="/Dashboard" class="nav_link" id="dashboard-link" title="View Dashboard">
+                <i class='bx bx-grid-alt nav_icon'></i>
+                <span class="nav_name"><strong>Dashboard</strong></span>
+              </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/Database">Database</a>
+              <a href="/Database" class="nav_link" id="database-link" title="Access Database">
+                <i class='bx bx-data nav_icon'></i>
+                <span class="nav_name"><strong>Database</strong></span>
+              </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/Forms">Forms</a>
+              <a href="/Forms" class="nav_link" id="form-link" title="Manage Forms">
+                <i class='bx bx-file nav_icon'></i>
+                <span class="nav_name"><strong>Forms</strong></span>
+              </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/Settings">Settings</a>
+              <a href="/Settings" class="nav_link" id="settings-link" title="Change Settings">
+                <i class='bx bx-cog nav_icon'></i>
+                <span class="nav_name"><strong>Settings</strong></span>
+              </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/Logs">Logs</a>
+              <a href="/Logs" class="nav_link" id="logs-link" title="View Logs">
+                <i class='bx bx-book nav_icon'></i>
+                <span class="nav_name"><strong>Logs</strong></span>
+              </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/Documentation">Documentation</a>
+              <a href="/Documentation" class="nav_link" id="documentation-link" title="App Documentation">
+                <i class="bx bx-file nav_icon"></i>
+                <span class="nav_name"><strong>Documentation</strong></span>
+              </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/logout">Sign Out</a>
+              <a href="/logout" class="nav_link" title="Sign Out">
+                <i class='bx bx-log-out nav_icon'></i>
+                <span class="nav_name"><strong>SignOut</strong></span>
+              </a>
             </li>
           </ul>
         </div>
@@ -150,7 +171,7 @@
     </div>
   </footer>
   
-  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <script src="https://kit.fontawesome.com/a076d05399.js" ></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"></script>
   <script src="{{ url_for('static', filename='JS/alive.js') }}"></script>
