@@ -1,0 +1,199 @@
+/* Small mobile devices (portrait) */
+@media only screen and (max-width: 320px) and (orientation: portrait) {
+    body {
+        font-size: 12px;
+    }
+    .login-header {
+        font-size: 20px;
+    }
+    .login-header i {
+        font-size: 20px;
+    }
+    .login-form {
+        padding: 15px;
+    }
+    .form-control {
+        font-size: 12px;
+    }
+    .btn-primary {
+        font-size: 12px;
+    }
+    .error-message {
+        font-size: 16px;
+    }
+}
+
+/* Small mobile devices (landscape) */
+@media only screen and (max-width: 320px) and (orientation: landscape) {
+    body {
+        font-size: 12px;
+    }
+    .login-header {
+        font-size: 20px;
+    }
+    .login-header i {
+        font-size: 20px;
+    }
+    .login-form {
+        padding: 15px;
+    }
+    .form-control {
+        font-size: 12px;
+    }
+    .btn-primary {
+        font-size: 12px;
+    }
+    .error-message {
+        font-size: 16px;
+    }
+}
+
+/* Medium mobile devices (portrait) */
+@media only screen and (min-width: 321px) and (max-width: 480px) and (orientation: portrait) {
+    body {
+        font-size: 14px;
+    }
+    .login-header {
+        font-size: 22px;
+    }
+    .login-header i {
+        font-size: 25px;
+    }
+    .login-form {
+        padding: 20px;
+    }
+    .form-control {
+        font-size: 13px;
+    }
+    .btn-primary {
+        font-size: 13px;
+    }
+    .error-message {
+        font-size: 18px;
+    }
+}
+
+/* Medium mobile devices (landscape) */
+@media only screen and (min-width: 321px) and (max-width: 480px) and (orientation: landscape) {
+    body {
+        font-size: 14px;
+    }
+    .login-header {
+        font-size: 22px;
+    }
+    .login-header i {
+        font-size: 25px;
+    }
+    .login-form {
+        padding: 20px;
+    }
+    .form-control {
+        font-size: 13px;
+    }
+    .btn-primary {
+        font-size: 13px;
+    }
+    .error-message {
+        font-size: 18px;
+    }
+}
+
+/* Large mobile devices (portrait) */
+@media only screen and (min-width: 481px) and (max-width: 768px) and (orientation: portrait) {
+    body {
+        font-size: 16px;
+    }
+    .login-header {
+        font-size: 24px;
+    }
+    .login-header i {
+        font-size: 30px;
+    }
+    .login-form {
+        padding: 25px;
+    }
+    .form-control {
+        font-size: 14px;
+    }
+    .btn-primary {
+        font-size: 14px;
+    }
+    .error-message {
+        font-size: 20px;
+    }
+}
+
+/* Large mobile devices (landscape) */
+@media only screen and (min-width: 481px) and (max-width: 768px) and (orientation: landscape) {
+    body {
+        font-size: 16px;
+    }
+    .login-header {
+        font-size: 24px;
+    }
+    .login-header i {
+        font-size: 30px;
+    }
+    .login-form {
+        padding: 25px;
+    }
+    .form-control {
+        font-size: 14px;
+    }
+    .btn-primary {
+        font-size: 14px;
+    }
+    .error-message {
+        font-size: 20px;
+    }
+}
+
+/* Extra large mobile devices (portrait) */
+@media only screen and (min-width: 769px) and (orientation: portrait) {
+    body {
+        font-size: 18px;
+    }
+    .login-header {
+        font-size: 30px;
+    }
+    .login-header i {
+        font-size: 40px;
+    }
+    .login-form {
+        padding: 30px;
+    }
+    .form-control {
+        font-size: 16px;
+    }
+    .btn-primary {
+        font-size: 16px;
+    }
+    .error-message {
+        font-size: 22px;
+    }
+}
+
+/* Extra large mobile devices (landscape) */
+@media only screen and (min-width: 769px) and (orientation: landscape) {
+    body {
+        font-size: 18px;
+    }
+    .login-header {
+        font-size: 30px;
+    }
+    .login-header i {
+        font-size: 40px;
+    }
+    .login-form {
+        padding: 30px;
+    }
+    .form-control {
+        font-size: 16px;
+    }
+    .btn-primary {
+        font-size: 16px;
+    }
+    .error-message {
+        font-size: 22px;
+    }
+}

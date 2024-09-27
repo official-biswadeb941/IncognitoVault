@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Session Error - Tampered Session Detected</title>
+        <meta name="robots" content="noindex, nofollow">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
+        <meta name="app-id" content="{{app_id}}">
+        <meta name="organization" content="IncognitoVault - Secure Personal Space Solutions">
+        <meta name="description" content="IncognitoVault provides secure and private digital spaces for personal and professional use.">
+        <meta name="author" content="ParseSphere Innovations">
+        <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0id2hpdGUiIGNsYXNzPSJiaSBiaS1sb2NrLWZpbGwiIHZpZXdCb3g9IjAgMCAxNiAxNiI+PHBhdGggZD0iTTggMWEyIDIgMCAwIDEgMiAydjRINlYzYTIgMiAwIDAgMSAyLTJtMyA2VjNhMyAzIDAgMCAwLTYgMHY0YTIgMiAwIDAgMC0yIDJ2NWEyIDIgMCAwIDAgMiAyaDZhMiAyIDAgMCAwIDItMlY5YTIgMiAwIDAgMC0yLTJ6Ii8+PC9zdmc+" type="image/svg+xml">
+        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="{{ url_for('static', filename='CSS/error-page.css') }}">
+        <link rel="stylesheet" href="/static/CSS/error-page.css">
+        <script>
+            // Redirect the user to the homepage after 5 seconds
+            setTimeout(function() {
+                window.location.href = "/";
+            }, 5000);
+        </script>
+    </head>
+<body>
+    <div class="container text-center">
+        <div class="row justify-content-center align-items-center vh-100">
+            <div class="col-md-8">
+                <div class="error-page">
+                    <h1 class="display-1">Session Error</h1>
+                    <h2 class="display-4">Tampered Session Detected</h2>
+                    <p class="lead">
+                        Oops! It seems your session data was tampered with. Our security protocols have detected a potential risk and stopped your session to protect your account. 🔒
+                    </p>
+                    <p class="lead">
+                        This issue can occur if someone tried to alter or corrupt your session data.
+                    </p>
+                    <h4>What Does This Mean?</h4>
+                    <ul class="list-unstyled">
+                        <li>Someone may have tried to manipulate your session data.</li>
+                        <li>The session token you provided is invalid or compromised.</li>
+                    </ul>
+                    <h4>Next Steps:</h4>
+                    <ul class="list-unstyled">
+                        <li>Clear your browser’s cookies and cache.</li>
+                        <li>Log in again to restart a fresh session.</li>
+                        <li>If this problem persists, contact support for help.</li>
+                    </ul>
+                    <p class="text-muted">Redirecting you to the homepage in 5 seconds...</p>
+                    <a href="/" class="btn btn-primary btn-lg">Return to Homepage</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
