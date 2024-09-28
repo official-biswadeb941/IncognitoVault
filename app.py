@@ -1,5 +1,5 @@
 # Standard library imports
-import random, string, logging, os, json, secrets, base64, hmac, binascii, secrets
+import random, string, logging, os, json, secrets, base64, hmac, binascii, secrets, hashlib
 from io import BytesIO
 from datetime import timedelta, datetime
 from collections import deque
@@ -32,6 +32,7 @@ from functools import wraps
 ################### Initialization and Configuration ########################
 app = Flask(__name__)
 app.secret_key = generate_key()
+HMAC_SECRET = app.secret_key
 
 app.config.update({
     'ENV': 'development',
@@ -207,29 +208,30 @@ def set_security_headers(response):
         response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
     return response
 
+def generate_session_signature(session_data):
+    """Generate a HMAC signature for the session data."""
+    return hmac.new(HMAC_SECRET.encode(), session_data.encode(), hashlib.sha256).hexdigest()
+
 def push_data_with_dynamic_ttl(redis_conn, session_id, session_data, timeout):
     session_data_json = json.dumps(session_data)
-    redis_conn.set(f'session:{session_id}', session_data_json, ex=timeout)
+    session_signature = generate_session_signature(session_data_json)
+    # Store both session data and its signature
+    redis_conn.set(f'session:{session_id}', json.dumps({'data': session_data_json, 'signature': session_signature}), ex=timeout)
 
 @app.before_request
 def manage_session_and_https():
-    # Redirect to HTTPS if not secure and not in development
-    if not request.is_secure and app.config['ENV'] != 'development':
-        url_parts = urlparse(request.url)
-        if url_parts.scheme == "http":
-            secure_url = request.url.replace("http://", "https://")
-            if url_parts.netloc == request.host:
-                response = Response(status=301)
-                response.headers['Location'] = secure_url
-                return response
-
     session_id = request.cookies.get('session_id')
     if session_id:
         try:
-            session_data = redis_conn.get(f'session:{session_id}')
-            if session_data:
-                decoded_data = session_data.decode('utf-8')
-                cleaned_data = decoded_data[1:-1].replace('\\"', '"')
+            session_info = redis_conn.get(f'session:{session_id}')
+            if session_info:
+                session_info = json.loads(session_info.decode('utf-8'))
+                session_data = session_info['data']
+                stored_signature = session_info['signature']
+                if stored_signature != generate_session_signature(session_data):
+                    session['error'] = 'Session tampered or invalid'
+                    return redirect('/session_error')  # Redirect to error page
+                cleaned_data = session_data[1:-1].replace('\\"', '"')
                 session.update(json.loads(cleaned_data))
                 redis_conn.expire(f'session:{session_id}', SESSION_TIMEOUT)
             else:
@@ -239,7 +241,6 @@ def manage_session_and_https():
     else:
         session_id = generate_session_key(length=128)
         session['session_id'] = session_id
-
 
 @app.after_request
 def save_session(response: Response):
@@ -431,6 +432,11 @@ def forbidden_error(error):
     user_ip = get_remote_address()
     logging.warning(f"403 Forbidden error for IP: {user_ip}")
     return render_template('Error-Page/403-Forbidden.html', user_ip=user_ip), 403
+
+@app.route('/session_error')
+def session_error():
+    session.clear()  # Clear session data if tampering is detected
+    return render_template('Error-Page/session_error.html'), 403
 
 @app.errorhandler(404)
 def not_found_error(error):
