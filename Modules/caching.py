@@ -32,8 +32,14 @@ def push_data_with_ttl(redis_conn, key, value, timeout, max_length=100):
     redis_conn.ltrim(key, 0, max_length - 1)
 
 def pop_data(redis_conn, key):
-    value = redis_conn.rpop(key)
+    key_type = redis_conn.type(key)
+    if key_type == b'list':
+        value = redis_conn.rpop(key)  # Pop the last element of the list
+    else:
+        value = redis_conn.get(key)   # Retrieve the value before deleting
+        redis_conn.delete(key)        # Delete the key from Redis
     return value
+
 
 def get_redis_uri():
     with open('Database/caching.json') as config_file:

@@ -1,5 +1,5 @@
 # Standard library imports
-import random, string, logging, os, json, secrets, base64, hmac, binascii, secrets, hashlib
+import random, string, logging, os, json, secrets, base64, hmac, secrets, hashlib
 from io import BytesIO
 from datetime import timedelta, datetime
 from collections import deque
@@ -229,6 +229,7 @@ def manage_session_and_https():
                 session_data = session_info['data']
                 stored_signature = session_info['signature']
                 if stored_signature != generate_session_signature(session_data):
+                    pop_data(redis_conn, f'session:{session_id}')
                     session['error'] = 'Session tampered or invalid'
                     return redirect('/session_error')  # Redirect to error page
                 cleaned_data = session_data[1:-1].replace('\\"', '"')
@@ -238,6 +239,7 @@ def manage_session_and_https():
                 print("No session data found for session_id:", session_id)
         except (json.JSONDecodeError, AttributeError) as e:
             print("Error loading session data:", e)
+            pop_data(redis_conn, f'session:{session_id}')
     else:
         session_id = generate_session_key(length=128)
         session['session_id'] = session_id
@@ -413,7 +415,7 @@ def documentation():
 def logout_route():
     session_id = session.get('session_id')
     if session_id:
-        redis_conn.delete(f'session:{session_id}')  # Remove session data immediately
+        pop_data(redis_conn, f'session:{session_id}')  # Improved pop_data handles both list and key-value types
     session.clear()
     response = make_response(redirect('/'))
     response.set_cookie('session_id', '', expires=0, secure=True, httponly=True, samesite='Lax')
