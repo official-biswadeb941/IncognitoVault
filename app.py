@@ -1,5 +1,5 @@
 # Standard library imports
-import random, string, logging, os, json, secrets, base64, hmac, binascii, secrets, hashlib
+import random, string, logging, os, json, secrets, base64, hmac, binascii, secrets
 from io import BytesIO
 from datetime import timedelta, datetime
 from collections import deque
@@ -32,7 +32,6 @@ from functools import wraps
 ################### Initialization and Configuration ########################
 app = Flask(__name__)
 app.secret_key = generate_key()
-HMAC_SECRET = app.secret_key
 
 app.config.update({
     'ENV': 'development',
@@ -208,28 +207,13 @@ def set_security_headers(response):
         response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
     return response
 
-def sign_session_data(session_data):
-    """Generate an HMAC signature for session data."""
-    session_json = json.dumps(session_data, sort_keys=True)  # Ensure consistent ordering
-    return hmac.new(HMAC_SECRET.encode(), session_json.encode(), hashlib.sha256).hexdigest()
-
-def validate_session_data(session_data, stored_signature):
-    """Validate if the session data matches its stored signature."""
-    expected_signature = sign_session_data(session_data)
-    return hmac.compare_digest(expected_signature, stored_signature)
-
 def push_data_with_dynamic_ttl(redis_conn, session_id, session_data, timeout):
-    """Push session data with a signature into Redis."""
-    try:
-        session_data_json = json.dumps(session_data)
-        session_signature = sign_session_data(session_data)  # Create a signature
-        session_package = json.dumps({'data': session_data_json, 'signature': session_signature})
-        redis_conn.set(f'session:{session_id}', session_package, ex=timeout)
-    except Exception as e:
-        print(f"Error pushing session data for session_id {session_id}: {str(e)}")
+    session_data_json = json.dumps(session_data)
+    redis_conn.set(f'session:{session_id}', session_data_json, ex=timeout)
 
 @app.before_request
 def manage_session_and_https():
+    # Redirect to HTTPS if not secure and not in development
     if not request.is_secure and app.config['ENV'] != 'development':
         url_parts = urlparse(request.url)
         if url_parts.scheme == "http":
@@ -238,50 +222,32 @@ def manage_session_and_https():
                 response = Response(status=301)
                 response.headers['Location'] = secure_url
                 return response
+
     session_id = request.cookies.get('session_id')
     if session_id:
         try:
-            session_package = redis_conn.get(f'session:{session_id}')
-            if session_package:
-                session_package = json.loads(session_package.decode('utf-8'))
-                session_data_json = session_package['data']
-                stored_signature = session_package['signature']
-                session_data = json.loads(session_data_json)
-                if not validate_session_data(session_data, stored_signature):
-                    session.clear()  # Clear session on tampering
-                    return render_template('Error-Page/session_error.html'), 400
-                session.update(session_data)
+            session_data = redis_conn.get(f'session:{session_id}')
+            if session_data:
+                decoded_data = session_data.decode('utf-8')
+                cleaned_data = decoded_data[1:-1].replace('\\"', '"')
+                session.update(json.loads(cleaned_data))
                 redis_conn.expire(f'session:{session_id}', SESSION_TIMEOUT)
             else:
-                session.clear()  # Clear session if data is missing
-                return render_template('Error-Page/session_error.html'), 400
+                print("No session data found for session_id:", session_id)
         except (json.JSONDecodeError, AttributeError) as e:
-            session.clear()  # Clear session on error
-            return render_template('Error-Page/session_error.html'), 400
+            print("Error loading session data:", e)
     else:
         session_id = generate_session_key(length=128)
         session['session_id'] = session_id
 
+
 @app.after_request
 def save_session(response: Response):
     if 'session_id' in session:
-        session_data = dict(session)  # Get the session data
-        session_id = session['session_id']
-        try:
-            # Save session with signature
-            push_data_with_dynamic_ttl(redis_conn, session_id, session_data, SESSION_TIMEOUT)
-            response.set_cookie('session_id', session_id, max_age=SESSION_TIMEOUT, httponly=True, secure=True, samesite='Lax')
-        except Exception as e:
-            print(f"Error saving session {session_id}: {str(e)}")
+        session_data = json.dumps(dict(session))
+        push_data_with_dynamic_ttl(redis_conn, session['session_id'], session_data, SESSION_TIMEOUT)
+        response.set_cookie('session_id', session.get('session_id', ''), max_age=SESSION_TIMEOUT, httponly=True, secure=True, samesite='Lax')
     return response
-
-@app.before_request
-def restrict_to_super_admin():
-    restricted_routes = ['/Dashboard', '/Database', '/Forms', '/Logs', '/Settings', '/Documentation']
-    if 'user' not in session or not session.get('is_super_admin'):
-        if request.path in restricted_routes:
-            return abort(403)  # Return a 403 Forbidden error for unauthorized access
-
 
 #################### Authentication Routes #######################
 def generate_honeypot_fields_for_fields(fields, length=64):
@@ -492,7 +458,7 @@ def csrf_error(e):
     logging.error(f"CSRF error for IP: {user_ip}")
     if 'CSRF' in str(e):
         return render_template('Error-Page/419-Authentication-Timeout.html', user_ip=user_ip), 400
-    return render_template('Error-Page/419-Authentication-Timeout.html', user_ip=user_ip), 400
+    return render_template('Error-Page/500-Internal-Server-Error.html', user_ip=user_ip), 500
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8800)
