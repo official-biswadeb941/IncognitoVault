@@ -432,7 +432,7 @@ def logout_route():
         pop_data(redis_conn, f'session:{session_id}')  # Improved pop_data handles both list and key-value types
     session.clear()
     response = make_response(redirect('/'))
-    response.set_cookie('session_uuid', '', expires=0)  # Clear UUID cookie
+    response.set_cookie('session_uuid', '', expires=0, secure=True, httponly=True, samesite='Lax')  # Clear UUID cookie
     response.set_cookie('session_id', '', expires=0, secure=True, httponly=True, samesite='Lax')
     return response
 
