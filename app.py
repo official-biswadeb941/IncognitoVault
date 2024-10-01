@@ -1,5 +1,5 @@
 # Standard library imports
-import random, string, logging, os, json, secrets, base64, hmac, secrets, hashlib, uuid
+import random, string, logging, os, json, secrets, base64, hmac, secrets, hashlib
 from io import BytesIO
 from datetime import timedelta, datetime
 from collections import deque
@@ -198,7 +198,6 @@ def set_security_headers(response):
     if 'user' in session and 'username' in session and 'user_id' in session:
         response.headers['X-Username'] = session['username']
         response.headers['X-User-ID'] = session['user_id']
-        response.headers['X-Session-UUID'] = session.get('session_uuid')
     response.headers['X-App-ID'] = app_id
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['X-Frame-Options'] = 'DENY'
@@ -244,17 +243,6 @@ def manage_session_and_https():
     else:
         session_id = generate_session_key(length=128)
         session['session_id'] = session_id
-
-@app.before_request
-def validate_session_uuid():
-    if 'user' in session and 'session_uuid' in session:
-        cookie_uuid = request.cookies.get('session_uuid')
-        if not cookie_uuid or cookie_uuid != session['session_uuid']:
-            session.clear()
-            return redirect('/logout')  # Redirect to logout or login page
-    elif 'user' in session and not request.cookies.get('session_uuid'):
-        session.clear()
-        return redirect('/logout')
 
 @app.after_request
 def save_session(response: Response):
@@ -344,13 +332,11 @@ def login_route():
             session['role'] = role  # Store the role in the session
             session['is_super_admin'] = user['is_super_admin']  # Store user role in session
             session['last_activity'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            session['session_uuid'] = str(uuid.uuid4())
             session.modified = True  # Mark session as modified to regenerate session ID
             session.permanent = True  # Make session permanent
-            session_data = json.dumps({'user': user, 'user_id': session['user_id'], 'username': session['username'], 'role': session['role'], 'last_activity': session['last_activity'], 'session_uuid': session['session_uuid']})
+            session_data = json.dumps({'user': user, 'user_id': session['user_id'], 'username': session['username'], 'role': session['role'], 'last_activity': session['last_activity']})
             push_data_with_ttl(redis_conn, f"session:{name}", session_data, timeout=1800)  # 30-minute TTL
             response = make_response(redirect('/Dashboard'))
-            response.set_cookie('session_uuid', session['session_uuid'], max_age=SESSION_TIMEOUT, httponly=True, secure=True, samesite='Lax')  # Secure UUID cookie
             response.set_cookie('session_id', session.get('session_id', ''), max_age=SESSION_TIMEOUT, httponly=True, secure=True, samesite='Lax')  # Set secure cookie
             return response
         else:
@@ -432,7 +418,6 @@ def logout_route():
         pop_data(redis_conn, f'session:{session_id}')  # Improved pop_data handles both list and key-value types
     session.clear()
     response = make_response(redirect('/'))
-    response.set_cookie('session_uuid', '', expires=0, secure=True, httponly=True, samesite='Lax')  # Clear UUID cookie
     response.set_cookie('session_id', '', expires=0, secure=True, httponly=True, samesite='Lax')
     return response
 
