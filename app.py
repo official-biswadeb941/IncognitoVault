@@ -285,6 +285,14 @@ def login(username, password):
     finally:
         conn.close()
 
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user' not in session:
+            return render_template('Error-Page/403-Forbidden.html'), 403
+        return f(*args, **kwargs)
+    return decorated_function
+
 #################### Route Handlers ######################
 @limiter.limit(dynamic_rate_limit)
 @app.route('/')
@@ -356,6 +364,7 @@ def login_route():
     return render_template('auth.html', login_error='Invalid CAPTCHA', login_form=login_form, captcha_image_base64=captcha_image_base64, login_honeypots=login_honeypots)
 
 @app.route('/Dashboard')
+@login_required
 @limiter.limit(dynamic_rate_limit)
 def dashboard():
     if 'user' in session:
@@ -366,6 +375,7 @@ def dashboard():
     return redirect('/')
 
 @app.route('/Database')
+@login_required
 @limiter.limit(dynamic_rate_limit)
 def database():
     if 'user' in session:
@@ -375,6 +385,7 @@ def database():
     return render_template('Super-Admin/database.html', user=user, user_id=user_id, name=name)
 
 @app.route('/Forms')
+@login_required
 @limiter.limit(dynamic_rate_limit)
 def form():
     if 'user' in session:
@@ -384,6 +395,7 @@ def form():
     return render_template('Super-Admin/form.html', user=user, user_id=user_id, name=name)
 
 @app.route('/Logs')
+@login_required
 @limiter.limit(dynamic_rate_limit)
 def logs():
     if 'user' in session:
@@ -393,6 +405,7 @@ def logs():
     return render_template('Super-Admin/Logs.html', user=user, user_id=user_id, name=name)
 
 @app.route('/Settings')
+@login_required
 @limiter.limit(dynamic_rate_limit)
 def settings():
     if 'user' in session:
@@ -402,6 +415,7 @@ def settings():
     return render_template('Super-Admin/settings.html', user=user, user_id=user_id, name=name)
 
 @app.route('/Documentation')
+@login_required
 @limiter.limit(dynamic_rate_limit)
 def documentation():
     if 'user' in session:
