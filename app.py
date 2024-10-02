@@ -49,7 +49,7 @@ app.config.update({
     'PERMANENT_SESSION_LIFETIME': timedelta(seconds=60)
 })
 
-redis_conn = redis_conn()  
+redis_conn = get_redis_connection() 
 cache = configure_cache(app)
 app.config['SESSION_REDIS'] = redis_conn
 
@@ -94,6 +94,36 @@ pool = PooledDB(
 
 
 ph = PasswordHasher()
+
+#################### Rate Limiting using Redis ######################
+def record_request_in_redis(user_ip):
+    current_time = datetime.now().timestamp()
+    key = f'rate_limit:{user_ip}'
+    pipeline = redis_conn.pipeline()
+    pipeline.lpush(key, current_time)
+    pipeline.ltrim(key, 0, 2499) 
+    pipeline.expire(key, window_duration.seconds) 
+    pipeline.execute()
+
+def get_request_count(user_ip):
+    key = f'rate_limit:{user_ip}'
+    current_time = datetime.now().timestamp()
+    request_times = redis_conn.lrange(key, 0, -1)
+    valid_requests = [float(t) for t in request_times if current_time - float(t) <= window_duration.total_seconds()]
+    return len(valid_requests)
+
+def dynamic_rate_limit():
+    user_ip = get_remote_address()
+    record_request_in_redis(user_ip)
+    request_count = get_request_count(user_ip)
+    if request_count > 2500:
+        return "5 per minute"
+    elif request_count > 1250:
+        return "10 per minute"
+    elif request_count > 625:
+        return "20 per minute"
+    else:
+        return "60 per minute"
 
 
 ####################### Utility Functions #####################
