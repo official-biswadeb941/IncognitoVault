@@ -1,27 +1,25 @@
 # Standard library imports
-import random, string, logging, os, json, secrets, base64, hmac, secrets, hashlib
+import string, os, json, secrets, base64, hmac, secrets, hashlib
 from io import BytesIO
 from datetime import timedelta, datetime
 from collections import deque
 
 # Third-party imports
-from flask import Flask, render_template, redirect, session, request, make_response, jsonify, Response, abort
+from flask import Flask, render_template, redirect, session, request, make_response, jsonify, Response, current_app
 from flask_wtf import CSRFProtect
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_session import Session 
 from flask_cors import CORS
-from werkzeug.exceptions import TooManyRequests, BadRequest
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
-from urllib.parse import urlparse
 import pymysql
 from dbutils.pooled_db import PooledDB
 
-
 # Custom module imports
-from Modules.caching import configure_cache, push_data_with_ttl, pop_data, get_redis_connection, get_redis_uri
-from Modules.session import *
+from Modules.error_handler import ErrorHandler
+from Modules.caching import *
+from Modules.session import generate_session_key, generate_key
 from Modules.form import LoginForm
 from Modules.captcha import generate_captcha, validate_captcha
 
@@ -31,6 +29,8 @@ from functools import wraps
 
 ################### Initialization and Configuration ########################
 app = Flask(__name__)
+error_handler = ErrorHandler(app)
+app.config['error_handler'] = error_handler
 app.secret_key = generate_key()
 HMAC_SECRET = app.secret_key
 
@@ -49,7 +49,7 @@ app.config.update({
     'PERMANENT_SESSION_LIFETIME': timedelta(seconds=60)
 })
 
-redis_conn = get_redis_connection()  
+redis_conn = redis_conn()  
 cache = configure_cache(app)
 app.config['SESSION_REDIS'] = redis_conn
 
@@ -95,35 +95,6 @@ pool = PooledDB(
 
 ph = PasswordHasher()
 
-#################### Rate Limiting using Redis ######################
-def record_request_in_redis(user_ip):
-    current_time = datetime.now().timestamp()
-    key = f'rate_limit:{user_ip}'
-    pipeline = redis_conn.pipeline()
-    pipeline.lpush(key, current_time)
-    pipeline.ltrim(key, 0, 2499) 
-    pipeline.expire(key, window_duration.seconds) 
-    pipeline.execute()
-
-def get_request_count(user_ip):
-    key = f'rate_limit:{user_ip}'
-    current_time = datetime.now().timestamp()
-    request_times = redis_conn.lrange(key, 0, -1)
-    valid_requests = [float(t) for t in request_times if current_time - float(t) <= window_duration.total_seconds()]
-    return len(valid_requests)
-
-def dynamic_rate_limit():
-    user_ip = get_remote_address()
-    record_request_in_redis(user_ip)
-    request_count = get_request_count(user_ip)
-    if request_count > 2500:
-        return "5 per minute"
-    elif request_count > 1250:
-        return "10 per minute"
-    elif request_count > 625:
-        return "20 per minute"
-    else:
-        return "60 per minute"
 
 ####################### Utility Functions #####################
 
@@ -258,17 +229,6 @@ def generate_honeypot_fields_for_fields(fields, length=64):
         for field in fields
     }
 
-def user_exists(name, email):
-    try:
-        conn = get_db_connection()
-        with conn.cursor() as cursor:
-            sql = "SELECT id FROM super_admin WHERE name = %s OR email = %s"
-            cursor.execute(sql, (name, email))
-            return cursor.fetchone() is not None
-    except Exception as e:
-        print(f"Error checking user existence: {e}")
-        return False
-
 def login(username, password):
     try:
         conn = get_db_connection()
@@ -289,7 +249,8 @@ def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'user' not in session:
-            return render_template('Error-Page/403-Forbidden.html'), 403
+            error_handler = current_app.config.get('error_handler')
+            return error_handler.render_error_page(403)
         return f(*args, **kwargs)
     return decorated_function
 
@@ -440,47 +401,6 @@ def logout_route():
 def keep_alive():
     session['last_activity'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     return jsonify(message="Session kept alive"), 200
-
-#################### Error Handlers ######################
-
-@app.errorhandler(403)
-def forbidden_error(error):
-    user_ip = get_remote_address()
-    logging.warning(f"403 Forbidden error for IP: {user_ip}")
-    return render_template('Error-Page/403-Forbidden.html', user_ip=user_ip), 403
-
-@app.route('/session_error')
-def session_error():
-    session.clear()  # Clear session data if tampering is detected
-    return render_template('Error-Page/session_error.html'), 403
-
-@app.errorhandler(404)
-def not_found_error(error):
-    user_ip = get_remote_address()
-    logging.info(f"404 Not Found error for IP: {user_ip}")
-    return render_template('Error-Page/404-Not-Found.html', user_ip=user_ip), 404
-
-@app.errorhandler(500)
-def internal_error(error):
-    user_ip = get_remote_address()
-    logging.error(f"500 Internal Server Error for IP: {user_ip}")
-    return render_template('Error-Page/500-Internal-Server-Error.html', user_ip=user_ip), 500
-
-@app.errorhandler(TooManyRequests)
-def rate_limit_error(e):
-    user_ip = get_remote_address()
-    logging.warning(f"Rate limit exceeded for IP: {user_ip}")
-    if 'user' in session:
-        return jsonify({"error": "Too many requests. Please try again later."}), 429
-    return render_template('Error-Page/429-Many-Request.html', user_ip=user_ip), 429
-
-@app.errorhandler(BadRequest)
-def csrf_error(e):
-    user_ip = get_remote_address()
-    logging.error(f"CSRF error for IP: {user_ip}")
-    if 'CSRF' in str(e):
-        return render_template('Error-Page/419-Authentication-Timeout.html', user_ip=user_ip), 400
-    return render_template('Error-Page/500-Internal-Server-Error.html', user_ip=user_ip), 500
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8800)
