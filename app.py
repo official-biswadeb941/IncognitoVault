@@ -1,5 +1,5 @@
 # Standard library imports
-import string, os, json, secrets, base64, hmac, secrets, hashlib
+import string, os, json, secrets, base64, hmac, secrets, hashlib, logging
 from io import BytesIO
 from datetime import timedelta, datetime
 from collections import deque
@@ -22,11 +22,10 @@ from Modules.redis_manager import *
 from Modules.db_manager import db_manager
 from Modules.session import generate_session_key, generate_key
 from Modules.form import LoginForm
-from Modules.captcha import generate_captcha, validate_captcha
+from Modules.captcha_manager import captcha
 
 # functools is not removed since it's probably used for decorators (verify before removing)
 from functools import wraps
-
 
 ################### Initialization and Configuration ########################
 app = Flask(__name__)
@@ -161,10 +160,12 @@ def generate_session_signature(session_data):
     return hmac.new(HMAC_SECRET.encode(), session_data.encode(), hashlib.sha256).hexdigest()
 
 def push_data_with_dynamic_ttl(redis_conn, session_id, session_data, timeout):
-    session_data_json = json.dumps(session_data)
-    session_signature = generate_session_signature(session_data_json)
-    # Store both session data and its signature
-    redis_conn.set(f'session:{session_id}', json.dumps({'data': session_data_json, 'signature': session_signature}), ex=timeout)
+    try:
+        session_data_json = json.dumps(session_data)
+        session_signature = generate_session_signature(session_data_json)
+        redis_conn.set(f'session:{session_id}', json.dumps({'data': session_data_json, 'signature': session_signature}), ex=timeout)
+    except Exception as e:
+        logging.error(f"Error pushing data with dynamic TTL: {e}")
 
 @app.before_request
 def manage_session_and_https():
@@ -200,9 +201,12 @@ def manage_session_and_https():
 @app.after_request
 def save_session(response: Response):
     if 'session_id' in session:
-        session_data = json.dumps(dict(session))
-        push_data_with_dynamic_ttl(redis_conn, session['session_id'], session_data, SESSION_TIMEOUT)
-        response.set_cookie('session_id', session.get('session_id', ''), max_age=SESSION_TIMEOUT, httponly=True, secure=True, samesite='Lax')
+        try:
+            session_data = json.dumps(dict(session))
+            push_data_with_dynamic_ttl(redis_conn, session['session_id'], session_data, SESSION_TIMEOUT)
+            response.set_cookie('session_id', session.get('session_id', ''), max_age=SESSION_TIMEOUT, httponly=True, secure=True, samesite='Lax')
+        except Exception as e:
+            logging.error(f"Error saving session: {e}")
     return response
 
 #################### Authentication Routes #######################
@@ -222,7 +226,7 @@ def login(username, password):
                 return user
             return None
     except Exception as e:
-        print(f"Error logging in: {e}")
+        logging.error(f"Error logging in: {e}")
         return None
     finally:
         conn.close()
@@ -241,7 +245,7 @@ def login_required(f):
 @app.route('/')
 def index():
     login_form = LoginForm()
-    captcha_image, captcha_answer = generate_captcha()
+    captcha_image, captcha_answer = captcha.generate_captcha()
     session['captcha_answer'] = captcha_answer
     buffer = BytesIO()
     captcha_image.save(buffer, format='PNG')
@@ -261,14 +265,14 @@ def login_route():
     for honeypot_name, expected_value in login_honeypots.items():
         if request.form.get(honeypot_name) != expected_value:
             return render_template('auth.html', login_error='Invalid honeypot value detected.', login_form=login_form, captcha_image_base64=session.get('captcha_image_base64'), login_honeypots=login_honeypots)
-    if login_form.validate_on_submit() and validate_captcha(int(user_captcha_answer) if user_captcha_answer else None, captcha_answer):
+    if login_form.validate_on_submit() and captcha.validate_captcha(int(user_captcha_answer) if user_captcha_answer else None, captcha_answer):
         name = login_form.name.data
         password = login_form.password.data
         role = login_form.role.data  # Get the selected role        
         user = login(name, password)
         if user:
             if role != 'super_admin' and user['is_super_admin']:  
-                captcha_image, captcha_answer = generate_captcha()
+                captcha_image, captcha_answer = captcha.generate_captcha()
                 buffer = BytesIO()
                 captcha_image.save(buffer, format='PNG')
                 buffer.seek(0)
@@ -291,14 +295,14 @@ def login_route():
             response.set_cookie('session_id', session.get('session_id', ''), max_age=SESSION_TIMEOUT, httponly=True, secure=True, samesite='Lax')  # Set secure cookie
             return response
         else:
-            captcha_image, captcha_answer = generate_captcha()
+            captcha_image, captcha_answer = captcha.generate_captcha()
             buffer = BytesIO()
             captcha_image.save(buffer, format='PNG')
             buffer.seek(0)
             captcha_image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
             session.update({'captcha_answer': captcha_answer, 'captcha_image_base64': captcha_image_base64})
             return render_template('auth.html', login_error='Invalid credentials', login_form=login_form, captcha_image_base64=captcha_image_base64, login_honeypots=login_honeypots)
-    captcha_image, captcha_answer = generate_captcha()
+    captcha_image, captcha_answer = captcha.generate_captcha()
     buffer = BytesIO()
     captcha_image.save(buffer, format='PNG')
     buffer.seek(0)
