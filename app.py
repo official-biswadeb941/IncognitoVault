@@ -19,6 +19,7 @@ from dbutils.pooled_db import PooledDB
 # Custom module imports
 from Modules.error_handler import ErrorHandler
 from Modules.caching import *
+from Modules.db_manager import db_manager
 from Modules.session import generate_session_key, generate_key
 from Modules.form import LoginForm
 from Modules.captcha import generate_captcha, validate_captcha
@@ -69,30 +70,6 @@ app.permanent_session_lifetime = timedelta(seconds=SESSION_TIMEOUT)
 request_times = deque()  
 window_duration = timedelta(minutes=1)
 
-with open('Database/DB.json', 'r') as f:
-    db_config = json.load(f).get('1_DB', {})
-
-ssl_config = db_config.get('ssl', {})
-ssl_config['ca'] = os.path.join('Database', ssl_config.get('ca', 'ca.pem'))
-
-# Initialize the connection pool
-pool = PooledDB(
-    creator=pymysql,  # The database module to use
-    maxconnections=20,  # The maximum number of connections allowed
-    mincached=5,  # The minimum number of connections to be cached
-    maxcached=10,  # The maximum number of connections to be cached
-    maxshared=10,  # The maximum number of shared connections
-    blocking=True,  # Whether to block if the pool is full
-    host=db_config['host'],
-    user=db_config['user'],
-    password=db_config['password'],
-    database=db_config['database'],
-    port=int(db_config['port']),
-    cursorclass=pymysql.cursors.DictCursor,
-    ssl=ssl_config
-)
-
-
 ph = PasswordHasher()
 
 #################### Rate Limiting using Redis ######################
@@ -128,8 +105,9 @@ def dynamic_rate_limit():
 
 ####################### Utility Functions #####################
 
+# Utility Function to get a DB connection
 def get_db_connection():
-    return pool.connection()
+    return db_manager.get_connection()
 
 def create_super_admin():
     try:
