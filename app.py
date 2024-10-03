@@ -18,7 +18,7 @@ from dbutils.pooled_db import PooledDB
 
 # Custom module imports
 from Modules.error_handler import ErrorHandler
-from Modules.caching import *
+from Modules.redis_manager import *
 from Modules.db_manager import db_manager
 from Modules.session import generate_session_key, generate_key
 from Modules.form import LoginForm
@@ -178,19 +178,24 @@ def manage_session_and_https():
                 stored_signature = session_info['signature']
                 if stored_signature != generate_session_signature(session_data):
                     pop_data(redis_conn, f'session:{session_id}')
-                    session['error'] = 'Session tampered or invalid'
-                    return redirect('/session_error')  # Redirect to error page
+                    session.clear() 
+                    return redirect('/session_error')
                 cleaned_data = session_data[1:-1].replace('\\"', '"')
                 session.update(json.loads(cleaned_data))
                 redis_conn.expire(f'session:{session_id}', SESSION_TIMEOUT)
             else:
                 print("No session data found for session_id:", session_id)
+                session.clear() 
+                return redirect('/login')
         except (json.JSONDecodeError, AttributeError) as e:
             print("Error loading session data:", e)
             pop_data(redis_conn, f'session:{session_id}')
+            session.clear()  
+            return redirect('/session_error')
     else:
         session_id = generate_session_key(length=128)
         session['session_id'] = session_id
+
 
 @app.after_request
 def save_session(response: Response):
