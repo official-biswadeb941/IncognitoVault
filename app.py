@@ -252,7 +252,32 @@ def generate_honeypot_fields_for_fields(fields, length=64):
     }
 
 def login(username, password):
-    
+    try:
+        conn = get_db_connection()
+        with conn.cursor() as cursor:
+            sql = "SELECT id, password, is_super_admin, failed_attempts, lockout_expiration FROM super_admin WHERE username = %s"
+            cursor.execute(sql, (username,))
+            user = cursor.fetchone()
+            if user:
+                if is_account_locked(user):
+                    increase_lockout_time(user)
+                    return None, f"Your account is locked. Try again after {user['lockout_expiration']}."
+                if verify_password(user['password'], password):
+                    reset_failed_attempts(user)  # Successful login resets attempts
+                    return user, None
+                else:
+                    remaining_attempts = MAX_FAILED_ATTEMPTS - (user['failed_attempts'] + 1)
+                    if remaining_attempts <= 0:
+                        increment_failed_attempts(user)
+                        return None, f"Your account has been locked for {LOCKOUT_DURATION}. Try again later."
+                    else:
+                        increment_failed_attempts(user)
+                        return None, f"Invalid credentials. You have {remaining_attempts} attempt(s) left before your account is locked."
+            return None, "User not found."
+    except Exception as e:
+        logging.error(f"Error logging in: {e}")
+        return None, "Internal server error."
+    finally:
         conn.close()
 
 def login_required(f):
