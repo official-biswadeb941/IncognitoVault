@@ -13,8 +13,7 @@ from flask_session import Session
 from flask_cors import CORS
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
-import pymysql
-from dbutils.pooled_db import PooledDB
+
 
 # Custom module imports
 from Modules.error_handler import ErrorHandler
@@ -33,6 +32,10 @@ error_handler = ErrorHandler(app)
 app.config['error_handler'] = error_handler
 app.secret_key = generate_key()
 HMAC_SECRET = app.secret_key
+
+MAX_FAILED_ATTEMPTS = 5
+LOCKOUT_DURATION = timedelta(minutes=15)
+LOCKOUT_INCREMENT = timedelta(minutes=5)
 
 app.config.update({
     'ENV': 'development',
@@ -83,6 +86,7 @@ def create_super_admin():
         with conn.cursor() as cursor:
             cursor.execute("SHOW TABLES LIKE 'super_admin'")
             if cursor.fetchone():
+                print("Super admin table already exists.")
                 return None
             else:
                 sql = """
@@ -91,14 +95,18 @@ def create_super_admin():
                     username VARCHAR(255) NOT NULL UNIQUE,
                     password VARCHAR(255) NOT NULL,
                     role VARCHAR(50) NOT NULL,
-                    is_super_admin BOOLEAN NOT NULL DEFAULT FALSE
-                )
+                    is_super_admin BOOLEAN NOT NULL DEFAULT FALSE,
+                    failed_attempts INT DEFAULT 0,
+                    lockout_expiration DATETIME DEFAULT NULL
+                );
                 """
                 cursor.execute(sql)
                 conn.commit()
+                print("Super admin table created successfully.")
             cursor.execute("SELECT COUNT(*) FROM super_admin WHERE is_super_admin = TRUE")
             super_admin_exists = cursor.fetchone()['COUNT(*)'] > 0
             if super_admin_exists:
+                print("Super admin already exists in the database.")
                 return 
             config_folder = 'Config'
             credentials_file = os.path.join(config_folder, 'creds.json')
@@ -112,6 +120,7 @@ def create_super_admin():
                 (default_username, default_password, default_role)
             )
             conn.commit()
+            print("Default super admin user inserted successfully.")
     except Exception as e:
         print(f"Error creating table or default admin user: {e}")
     finally:
@@ -161,13 +170,16 @@ def generate_session_signature(session_data):
 
 def push_data_with_dynamic_ttl(redis_conn, session_id, session_data, timeout):
     try:
+        if isinstance(session_data, str):
+            session_data = json.loads(session_data)
+        if 'lockout_expiration' in session_data and isinstance(session_data['lockout_expiration'], datetime):
+            session_data['lockout_expiration'] = session_data['lockout_expiration'].strftime('%Y-%m-%d %H:%M:%S')
         session_data_json = json.dumps(session_data)
         session_signature = generate_session_signature(session_data_json)
         redis_conn.set(f'session:{session_id}', json.dumps({'data': session_data_json, 'signature': session_signature}), ex=timeout)
     except Exception as e:
         logging.error(f"Error pushing data with dynamic TTL: {e}")
 
-@app.before_request
 def manage_session_and_https():
     session_id = request.cookies.get('session_id')
     if session_id:
@@ -175,14 +187,15 @@ def manage_session_and_https():
             session_info = redis_conn.get(f'session:{session_id}')
             if session_info:
                 session_info = json.loads(session_info.decode('utf-8'))
-                session_data = session_info['data']
+                session_data = json.loads(session_info['data'])  # Convert string to dictionary here
                 stored_signature = session_info['signature']
+                if 'lockout_expiration' in session_data:
+                    session_data['lockout_expiration'] = datetime.strptime(session_data['lockout_expiration'], '%Y-%m-%d %H:%M:%S')
                 if stored_signature != generate_session_signature(session_data):
                     pop_data(redis_conn, f'session:{session_id}')
                     session.clear() 
                     return redirect('/session_error')
-                cleaned_data = session_data[1:-1].replace('\\"', '"')
-                session.update(json.loads(cleaned_data))
+                session.update(session_data)
                 redis_conn.expire(f'session:{session_id}', SESSION_TIMEOUT)
             else:
                 print("No session data found for session_id:", session_id)
@@ -193,10 +206,33 @@ def manage_session_and_https():
             pop_data(redis_conn, f'session:{session_id}')
             session.clear()  
             return redirect('/session_error')
-    else:
-        session_id = generate_session_key(length=128)
-        session['session_id'] = session_id
-
+        
+def manage_session_and_https():
+    session_id = request.cookies.get('session_id')
+    if session_id:
+        try:
+            session_info = redis_conn.get(f'session:{session_id}')
+            if session_info:
+                session_info = json.loads(session_info.decode('utf-8'))
+                session_data = json.loads(session_info['data'])  # Convert string to dictionary here
+                stored_signature = session_info['signature']
+                if 'lockout_expiration' in session_data:
+                    session_data['lockout_expiration'] = datetime.strptime(session_data['lockout_expiration'], '%Y-%m-%d %H:%M:%S')
+                if stored_signature != generate_session_signature(session_data):
+                    pop_data(redis_conn, f'session:{session_id}')
+                    session.clear() 
+                    return redirect('/session_error')
+                session.update(session_data)
+                redis_conn.expire(f'session:{session_id}', SESSION_TIMEOUT)
+            else:
+                print("No session data found for session_id:", session_id)
+                session.clear() 
+                return redirect('/login')
+        except (json.JSONDecodeError, AttributeError) as e:
+            print("Error loading session data:", e)
+            pop_data(redis_conn, f'session:{session_id}')
+            session.clear()  
+            return redirect('/session_error')
 
 @app.after_request
 def save_session(response: Response):
@@ -216,19 +252,7 @@ def generate_honeypot_fields_for_fields(fields, length=64):
     }
 
 def login(username, password):
-    try:
-        conn = get_db_connection()
-        with conn.cursor() as cursor:
-            sql = "SELECT id, password, is_super_admin FROM super_admin WHERE username = %s"
-            cursor.execute(sql, (username,))
-            user = cursor.fetchone()
-            if user and verify_password(user['password'], password):
-                return user
-            return None
-    except Exception as e:
-        logging.error(f"Error logging in: {e}")
-        return None
-    finally:
+    
         conn.close()
 
 def login_required(f):
@@ -239,6 +263,46 @@ def login_required(f):
             return error_handler.render_error_page(403)
         return f(*args, **kwargs)
     return decorated_function
+
+def is_account_locked(user):
+    lockout_expiration = user['lockout_expiration']
+    if lockout_expiration is None:
+        return False
+    if isinstance(lockout_expiration, str):
+        lockout_expiration = datetime.strptime(lockout_expiration, '%Y-%m-%d %H:%M:%S')
+    if datetime.now() < lockout_expiration:
+        return True
+    else:
+        return False
+
+def increase_lockout_time(user):
+    """Increase lockout time by 5 minutes."""
+    new_lockout_time = datetime.now() + LOCKOUT_INCREMENT
+    conn = get_db_connection()
+    with conn.cursor() as cursor:
+        cursor.execute("UPDATE super_admin SET lockout_expiration = %s WHERE id = %s", (new_lockout_time, user['id']))
+        conn.commit()
+
+def reset_failed_attempts(user):
+    """Reset failed login attempts after a successful login."""
+    conn = get_db_connection()
+    with conn.cursor() as cursor:
+        cursor.execute("UPDATE super_admin SET failed_attempts = 0, lockout_expiration = NULL WHERE id = %s", (user['id'],))
+        conn.commit()
+
+def increment_failed_attempts(user):
+    """Increment failed login attempts and lock the account if necessary."""
+    conn = get_db_connection()
+    with conn.cursor() as cursor:
+        new_failed_attempts = user['failed_attempts'] + 1
+        if new_failed_attempts >= MAX_FAILED_ATTEMPTS:
+            lockout_time = datetime.now() + LOCKOUT_DURATION
+            cursor.execute("UPDATE super_admin SET failed_attempts = %s, lockout_expiration = %s WHERE id = %s", 
+                           (new_failed_attempts, lockout_time, user['id']))
+        else:
+            cursor.execute("UPDATE super_admin SET failed_attempts = %s WHERE id = %s", 
+                           (new_failed_attempts, user['id']))
+        conn.commit()
 
 #################### Route Handlers ######################
 @limiter.limit(dynamic_rate_limit)
@@ -268,31 +332,31 @@ def login_route():
     if login_form.validate_on_submit() and captcha.validate_captcha(int(user_captcha_answer) if user_captcha_answer else None, captcha_answer):
         name = login_form.name.data
         password = login_form.password.data
-        role = login_form.role.data  # Get the selected role        
-        user = login(name, password)
+        role = login_form.role.data
+        user, error_message = login(name, password)
         if user:
-            if role != 'super_admin' and user['is_super_admin']:  
+            if role != 'super_admin' and user['is_super_admin']:
                 captcha_image, captcha_answer = captcha.generate_captcha()
                 buffer = BytesIO()
                 captcha_image.save(buffer, format='PNG')
                 buffer.seek(0)
                 captcha_image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
                 session.update({'captcha_answer': captcha_answer, 'captcha_image_base64': captcha_image_base64})
-                return render_template('auth.html', login_error='Invalid role.', login_form=login_form, captcha_image_base64=captcha_image_base64, login_honeypots=login_honeypots)  
+                return render_template('auth.html', login_error='Invalid role.', login_form=login_form, captcha_image_base64=captcha_image_base64, login_honeypots=login_honeypots)
             session.get('_csrf_token')
-            session.clear()  # Clear the session
+            session.clear()
             session['user'] = user
             session['user_id'] = generate_user_id(name)
             session['username'] = name
-            session['role'] = role  # Store the role in the session
-            session['is_super_admin'] = user['is_super_admin']  # Store user role in session
+            session['role'] = role
+            session['is_super_admin'] = user['is_super_admin']
             session['last_activity'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            session.modified = True  # Mark session as modified to regenerate session ID
-            session.permanent = True  # Make session permanent
+            session.modified = True
+            session.permanent = True
             session_data = json.dumps({'user': user, 'user_id': session['user_id'], 'username': session['username'], 'role': session['role'], 'last_activity': session['last_activity']})
             push_data_with_ttl(redis_conn, f"session:{name}", session_data, timeout=1800)  # 30-minute TTL
             response = make_response(redirect('/Dashboard'))
-            response.set_cookie('session_id', session.get('session_id', ''), max_age=SESSION_TIMEOUT, httponly=True, secure=True, samesite='Lax')  # Set secure cookie
+            response.set_cookie('session_id', session.get('session_id', ''), max_age=SESSION_TIMEOUT, httponly=True, secure=True, samesite='Lax')
             return response
         else:
             captcha_image, captcha_answer = captcha.generate_captcha()
@@ -301,7 +365,7 @@ def login_route():
             buffer.seek(0)
             captcha_image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
             session.update({'captcha_answer': captcha_answer, 'captcha_image_base64': captcha_image_base64})
-            return render_template('auth.html', login_error='Invalid credentials', login_form=login_form, captcha_image_base64=captcha_image_base64, login_honeypots=login_honeypots)
+            return render_template('auth.html', login_error=error_message, login_form=login_form, captcha_image_base64=captcha_image_base64, login_honeypots=login_honeypots)
     captcha_image, captcha_answer = captcha.generate_captcha()
     buffer = BytesIO()
     captcha_image.save(buffer, format='PNG')
