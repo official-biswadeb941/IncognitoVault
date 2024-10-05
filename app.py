@@ -22,6 +22,7 @@ from Modules.db_manager import db_manager
 from Modules.session import generate_session_key, generate_key
 from Modules.form import LoginForm
 from Modules.captcha_manager import captcha
+from Modules.lockout_manager import LockoutManager
 
 # functools is not removed since it's probably used for decorators (verify before removing)
 from functools import wraps
@@ -32,10 +33,6 @@ error_handler = ErrorHandler(app)
 app.config['error_handler'] = error_handler
 app.secret_key = generate_key()
 HMAC_SECRET = app.secret_key
-
-MAX_FAILED_ATTEMPTS = 5
-LOCKOUT_DURATION = timedelta(minutes=15)
-LOCKOUT_INCREMENT = timedelta(minutes=5)
 
 app.config.update({
     'ENV': 'development',
@@ -179,34 +176,7 @@ def push_data_with_dynamic_ttl(redis_conn, session_id, session_data, timeout):
         redis_conn.set(f'session:{session_id}', json.dumps({'data': session_data_json, 'signature': session_signature}), ex=timeout)
     except Exception as e:
         logging.error(f"Error pushing data with dynamic TTL: {e}")
-
-def manage_session_and_https():
-    session_id = request.cookies.get('session_id')
-    if session_id:
-        try:
-            session_info = redis_conn.get(f'session:{session_id}')
-            if session_info:
-                session_info = json.loads(session_info.decode('utf-8'))
-                session_data = json.loads(session_info['data'])  # Convert string to dictionary here
-                stored_signature = session_info['signature']
-                if 'lockout_expiration' in session_data:
-                    session_data['lockout_expiration'] = datetime.strptime(session_data['lockout_expiration'], '%Y-%m-%d %H:%M:%S')
-                if stored_signature != generate_session_signature(session_data):
-                    pop_data(redis_conn, f'session:{session_id}')
-                    session.clear() 
-                    return redirect('/session_error')
-                session.update(session_data)
-                redis_conn.expire(f'session:{session_id}', SESSION_TIMEOUT)
-            else:
-                print("No session data found for session_id:", session_id)
-                session.clear() 
-                return redirect('/login')
-        except (json.JSONDecodeError, AttributeError) as e:
-            print("Error loading session data:", e)
-            pop_data(redis_conn, f'session:{session_id}')
-            session.clear()  
-            return redirect('/session_error')
-        
+  
 def manage_session_and_https():
     session_id = request.cookies.get('session_id')
     if session_id:
@@ -259,19 +229,19 @@ def login(username, password):
             cursor.execute(sql, (username,))
             user = cursor.fetchone()
             if user:
-                if is_account_locked(user):
-                    increase_lockout_time(user)
+                if LockoutManager.is_account_locked(user):
+                    LockoutManager.increase_lockout_time(user)
                     return None, f"Your account is locked. Try again after {user['lockout_expiration']}."
                 if verify_password(user['password'], password):
-                    reset_failed_attempts(user)  # Successful login resets attempts
+                    LockoutManager.reset_failed_attempts(user)  # Successful login resets attempts
                     return user, None
                 else:
-                    remaining_attempts = MAX_FAILED_ATTEMPTS - (user['failed_attempts'] + 1)
+                    remaining_attempts = LockoutManager.MAX_FAILED_ATTEMPTS - (user['failed_attempts'] + 1)
                     if remaining_attempts <= 0:
-                        increment_failed_attempts(user)
-                        return None, f"Your account has been locked for {LOCKOUT_DURATION}. Try again later."
+                        LockoutManager.increment_failed_attempts(user)
+                        return None, f"Your account has been locked for {LockoutManager.LOCKOUT_DURATION}. Try again later."
                     else:
-                        increment_failed_attempts(user)
+                        LockoutManager.increment_failed_attempts(user)
                         return None, f"Invalid credentials. You have {remaining_attempts} attempt(s) left before your account is locked."
             return None, "User not found."
     except Exception as e:
@@ -288,46 +258,6 @@ def login_required(f):
             return error_handler.render_error_page(403)
         return f(*args, **kwargs)
     return decorated_function
-
-def is_account_locked(user):
-    lockout_expiration = user['lockout_expiration']
-    if lockout_expiration is None:
-        return False
-    if isinstance(lockout_expiration, str):
-        lockout_expiration = datetime.strptime(lockout_expiration, '%Y-%m-%d %H:%M:%S')
-    if datetime.now() < lockout_expiration:
-        return True
-    else:
-        return False
-
-def increase_lockout_time(user):
-    """Increase lockout time by 5 minutes."""
-    new_lockout_time = datetime.now() + LOCKOUT_INCREMENT
-    conn = get_db_connection()
-    with conn.cursor() as cursor:
-        cursor.execute("UPDATE super_admin SET lockout_expiration = %s WHERE id = %s", (new_lockout_time, user['id']))
-        conn.commit()
-
-def reset_failed_attempts(user):
-    """Reset failed login attempts after a successful login."""
-    conn = get_db_connection()
-    with conn.cursor() as cursor:
-        cursor.execute("UPDATE super_admin SET failed_attempts = 0, lockout_expiration = NULL WHERE id = %s", (user['id'],))
-        conn.commit()
-
-def increment_failed_attempts(user):
-    """Increment failed login attempts and lock the account if necessary."""
-    conn = get_db_connection()
-    with conn.cursor() as cursor:
-        new_failed_attempts = user['failed_attempts'] + 1
-        if new_failed_attempts >= MAX_FAILED_ATTEMPTS:
-            lockout_time = datetime.now() + LOCKOUT_DURATION
-            cursor.execute("UPDATE super_admin SET failed_attempts = %s, lockout_expiration = %s WHERE id = %s", 
-                           (new_failed_attempts, lockout_time, user['id']))
-        else:
-            cursor.execute("UPDATE super_admin SET failed_attempts = %s WHERE id = %s", 
-                           (new_failed_attempts, user['id']))
-        conn.commit()
 
 #################### Route Handlers ######################
 @limiter.limit(dynamic_rate_limit)
@@ -370,6 +300,8 @@ def login_route():
                 return render_template('auth.html', login_error='Invalid role.', login_form=login_form, captcha_image_base64=captcha_image_base64, login_honeypots=login_honeypots)
             session.get('_csrf_token')
             session.clear()
+            session_id = generate_session_key()
+            session['session_id'] = session_id
             session['user'] = user
             session['user_id'] = generate_user_id(name)
             session['username'] = name
@@ -461,7 +393,7 @@ def documentation():
     return render_template('Super-Admin/Documentation.html', user=user, user_id=user_id, name=name)
 
 @app.route('/logout', methods=['GET', 'POST'])
-@limiter.limit("200 per minute")
+@limiter.limit("dynamic_rate_limit")
 def logout_route():
     session_id = session.get('session_id')
     if session_id:
@@ -472,7 +404,7 @@ def logout_route():
     return response
 
 @app.route('/keep_alive', methods=['POST'])
-@limiter.limit("200 per minute")
+@limiter.limit("dynamic_rate_limit")
 def keep_alive():
     session['last_activity'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     return jsonify(message="Session kept alive"), 200

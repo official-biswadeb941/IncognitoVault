@@ -21,7 +21,7 @@ class ErrorHandler:
             413: 'Error-Page/413-Large-Payload.html',
             415: 'Error-Page/415-Unsupported-Media-Type.html',
             418: 'Error-Page/418-Teapot.html',
-            429: 'Error-Page/429-Many-Requests.html',
+            429: 'Error-Page/429-Many-Request.html',
             500: 'Error-Page/500-Internal-Server-Error.html',
             501: 'Error-Page/501-Not-Implemented.html',
             502: 'Error-Page/502-Bad-Gateway.html',

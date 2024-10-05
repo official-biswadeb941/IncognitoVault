@@ -71,11 +71,11 @@ def dynamic_rate_limit():
     user_ip = get_remote_address()
     record_request_in_redis(user_ip)
     request_count = get_request_count(user_ip)
-    if request_count > 2500:
+    if request_count > 5000:
         return "5 per minute"
-    elif request_count > 1250:
+    elif request_count > 2500:
         return "10 per minute"
-    elif request_count > 625:
+    elif request_count > 1250:
         return "20 per minute"
     else:
         return "60 per minute"
