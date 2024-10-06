@@ -32,7 +32,6 @@ app = Flask(__name__)
 error_handler = ErrorHandler(app)
 app.config['error_handler'] = error_handler
 app.secret_key = generate_key()
-HMAC_SECRET = app.secret_key
 
 app.config.update({
     'ENV': 'development',
@@ -161,22 +160,6 @@ def set_security_headers(response):
         response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
     return response
 
-def generate_session_signature(session_data):
-    """Generate a HMAC signature for the session data."""
-    return hmac.new(HMAC_SECRET.encode(), session_data.encode(), hashlib.sha256).hexdigest()
-
-def push_data_with_dynamic_ttl(redis_conn, session_id, session_data, timeout):
-    try:
-        if isinstance(session_data, str):
-            session_data = json.loads(session_data)
-        if 'lockout_expiration' in session_data and isinstance(session_data['lockout_expiration'], datetime):
-            session_data['lockout_expiration'] = session_data['lockout_expiration'].strftime('%Y-%m-%d %H:%M:%S')
-        session_data_json = json.dumps(session_data)
-        session_signature = generate_session_signature(session_data_json)
-        redis_conn.set(f'session:{session_id}', json.dumps({'data': session_data_json, 'signature': session_signature}), ex=timeout)
-    except Exception as e:
-        logging.error(f"Error pushing data with dynamic TTL: {e}")
-  
 def manage_session_and_https():
     session_id = request.cookies.get('session_id')
     if session_id:
@@ -209,7 +192,7 @@ def save_session(response: Response):
     if 'session_id' in session:
         try:
             session_data = json.dumps(dict(session))
-            push_data_with_dynamic_ttl(redis_conn, session['session_id'], session_data, SESSION_TIMEOUT)
+            push_session_data(redis_conn, session['session_id'], session_data, SESSION_TIMEOUT)
             response.set_cookie('session_id', session.get('session_id', ''), max_age=SESSION_TIMEOUT, httponly=True, secure=True, samesite='Lax')
         except Exception as e:
             logging.error(f"Error saving session: {e}")
@@ -311,7 +294,7 @@ def login_route():
             session.modified = True
             session.permanent = True
             session_data = json.dumps({'user': user, 'user_id': session['user_id'], 'username': session['username'], 'role': session['role'], 'last_activity': session['last_activity']})
-            push_data_with_ttl(redis_conn, f"session:{name}", session_data, timeout=1800)  # 30-minute TTL
+            push_session_data(redis_conn, f"session:{name}", session_data)  # 30-minute TTL
             response = make_response(redirect('/Dashboard'))
             response.set_cookie('session_id', session.get('session_id', ''), max_age=SESSION_TIMEOUT, httponly=True, secure=True, samesite='Lax')
             return response

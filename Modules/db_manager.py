@@ -15,7 +15,6 @@ class DatabaseManager:
         self.db_section = db_section
         self.pool = None
         self.ssl_config = None
-        self._initialize_pool()
 
     def _load_db_config(self):
         """Load the database configuration from the specified JSON file."""
@@ -117,11 +116,10 @@ class DatabaseManager:
             raise Exception(error_message)
 
     def get_connection(self):
-        """Get a connection from the connection pool."""
+        """Get a connection from the connection pool, lazily initializing the pool if necessary."""
         if self.pool is None:
-            error_message = "Database connection pool is not initialized."
-            logging.error(error_message)
-            raise Exception(error_message)
+            logging.info("Initializing connection pool (lazy loading)...")
+            self._initialize_pool()
         try:
             return self.pool.connection()
         except Exception as e:
