@@ -17,6 +17,7 @@ from argon2.exceptions import VerifyMismatchError
 
 # Custom module imports
 from Modules.error_handler import ErrorHandler
+from Modules.rate_limiter import *
 from Modules.redis_manager import *
 from Modules.db_manager import db_manager
 from Modules.session import generate_session_key, generate_key
@@ -49,6 +50,11 @@ app.config.update({
 })
 
 redis_conn = get_redis_connection() 
+rate_limiter = RateLimiter(
+    redis_connection=redis_conn,
+    get_capacity=get_dynamic_capacity,
+    get_leak_rate=get_dynamic_leak_rate
+)
 cache = configure_cache(app)
 app.config['SESSION_REDIS'] = redis_conn
 
@@ -243,7 +249,7 @@ def login_required(f):
     return decorated_function
 
 #################### Route Handlers ######################
-@limiter.limit(dynamic_rate_limit)
+@rate_limited(rate_limiter)
 @app.route('/')
 def index():
     login_form = LoginForm()
@@ -258,7 +264,7 @@ def index():
     return render_template('auth.html', login_form=login_form, captcha_image_base64=captcha_image_base64, login_honeypots=login_honeypots, app_id=app_id)
 
 @app.route('/login', methods=['POST', 'GET'])
-@limiter.limit(dynamic_rate_limit)
+@rate_limited(rate_limiter)
 def login_route():
     login_form = LoginForm()
     login_honeypots = session.get('login_honeypots', {})
@@ -316,7 +322,7 @@ def login_route():
 
 @app.route('/Dashboard')
 @login_required
-@limiter.limit(dynamic_rate_limit)
+@rate_limited(rate_limiter)
 def dashboard():
     if 'user' in session:
         user = session['user']
@@ -327,7 +333,7 @@ def dashboard():
 
 @app.route('/Database')
 @login_required
-@limiter.limit(dynamic_rate_limit)
+@rate_limited(rate_limiter)
 def database():
     if 'user' in session:
         user = session['user']
@@ -337,7 +343,7 @@ def database():
 
 @app.route('/Forms')
 @login_required
-@limiter.limit(dynamic_rate_limit)
+@rate_limited(rate_limiter)
 def form():
     if 'user' in session:
         user = session['user']
@@ -347,7 +353,7 @@ def form():
 
 @app.route('/Logs')
 @login_required
-@limiter.limit(dynamic_rate_limit)
+@rate_limited(rate_limiter)
 def logs():
     if 'user' in session:
         user = session['user']
@@ -357,7 +363,7 @@ def logs():
 
 @app.route('/Settings')
 @login_required
-@limiter.limit(dynamic_rate_limit)
+@rate_limited(rate_limiter)
 def settings():
     if 'user' in session:
         user = session['user']
@@ -367,7 +373,7 @@ def settings():
 
 @app.route('/Documentation')
 @login_required
-@limiter.limit(dynamic_rate_limit)
+@rate_limited(rate_limiter)
 def documentation():
     if 'user' in session:
         user = session['user']
@@ -376,7 +382,7 @@ def documentation():
     return render_template('Super-Admin/Documentation.html', user=user, user_id=user_id, name=name)
 
 @app.route('/logout', methods=['GET', 'POST'])
-@limiter.limit("dynamic_rate_limit")
+@rate_limited(rate_limiter)
 def logout_route():
     session_id = session.get('session_id')
     if session_id:
@@ -387,7 +393,7 @@ def logout_route():
     return response
 
 @app.route('/keep_alive', methods=['POST'])
-@limiter.limit("dynamic_rate_limit")
+@rate_limited(rate_limiter)
 def keep_alive():
     session['last_activity'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     return jsonify(message="Session kept alive"), 200

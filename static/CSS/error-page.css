@@ -3,7 +3,7 @@ body {
     background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
     color: #e0e0e0; /* Light text color for readability */
     font-family: 'Segoe UI', Tahoma;
-    height: 100vh;
+    height: 100%;
     margin: 0; /* Remove default margin */
 }
 
