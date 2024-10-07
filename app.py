@@ -17,7 +17,7 @@ from argon2.exceptions import VerifyMismatchError
 
 # Custom module imports
 from Modules.error_handler import ErrorHandler
-from Modules.redis_manager import redis
+from Modules.redis_manager import *
 from Modules.db_manager import db_manager
 from Modules.session import generate_session_key, generate_key
 from Modules.form import LoginForm
@@ -48,8 +48,8 @@ app.config.update({
     'PERMANENT_SESSION_LIFETIME': timedelta(seconds=60)
 })
 
-redis_conn = redis.get_redis_connection() 
-cache = redis.configure_cache(app)
+redis_conn = get_redis_connection() 
+cache = configure_cache(app)
 app.config['SESSION_REDIS'] = redis_conn
 
 Session(app)
@@ -59,7 +59,7 @@ CORS(app)
 
 limiter = Limiter(
     key_func=get_remote_address,
-    storage_uri=redis.get_redis_uri(),  # Avoid redundant redis_conn here
+    storage_uri=get_redis_uri(),  # Avoid redundant redis_conn here
     app=app,
 )
 
@@ -75,9 +75,6 @@ ph = PasswordHasher()
 # Utility Function to get a DB connection
 def get_db_connection():
     return db_manager.get_connection()
-
-def dynamic_rate_limit():
-    return redis.dynamic_rate_limit()
 
 def create_super_admin():
     try:
@@ -174,8 +171,8 @@ def manage_session_and_https():
                 stored_signature = session_info['signature']
                 if 'lockout_expiration' in session_data:
                     session_data['lockout_expiration'] = datetime.strptime(session_data['lockout_expiration'], '%Y-%m-%d %H:%M:%S')
-                if stored_signature != redis.generate_session_signature(session_data):
-                    redis.pop_data(redis_conn, f'session:{session_id}')
+                if stored_signature != generate_session_signature(session_data):
+                    pop_data(redis_conn, f'session:{session_id}')
                     session.clear() 
                     return redirect('/session_error')
                 session.update(session_data)
@@ -186,7 +183,7 @@ def manage_session_and_https():
                 return redirect('/login')
         except (json.JSONDecodeError, AttributeError) as e:
             print("Error loading session data:", e)
-            redis.pop_data(redis_conn, f'session:{session_id}')
+            pop_data(redis_conn, f'session:{session_id}')
             session.clear()  
             return redirect('/session_error')
 
@@ -195,7 +192,7 @@ def save_session(response: Response):
     if 'session_id' in session:
         try:
             session_data = json.dumps(dict(session))
-            redis.push_session_data(redis_conn, session['session_id'], session_data, SESSION_TIMEOUT)
+            push_session_data(redis_conn, session['session_id'], session_data, SESSION_TIMEOUT)
             response.set_cookie('session_id', session.get('session_id', ''), max_age=SESSION_TIMEOUT, httponly=True, secure=True, samesite='Lax')
         except Exception as e:
             logging.error(f"Error saving session: {e}")
@@ -297,7 +294,7 @@ def login_route():
             session.modified = True
             session.permanent = True
             session_data = json.dumps({'user': user, 'user_id': session['user_id'], 'username': session['username'], 'role': session['role'], 'last_activity': session['last_activity']})
-            redis.push_session_data(redis_conn, f"session:{name}", session_data)  # 30-minute TTL
+            push_session_data(redis_conn, f"session:{name}", session_data)  # 30-minute TTL
             response = make_response(redirect('/Dashboard'))
             response.set_cookie('session_id', session.get('session_id', ''), max_age=SESSION_TIMEOUT, httponly=True, secure=True, samesite='Lax')
             return response
@@ -383,7 +380,7 @@ def documentation():
 def logout_route():
     session_id = session.get('session_id')
     if session_id:
-        redis.pop_data(redis_conn, f'session:{session_id}')  # Improved pop_data handles both list and key-value types
+        pop_data(redis_conn, f'session:{session_id}')  # Improved pop_data handles both list and key-value types
     session.clear()
     response = make_response(redirect('/'))
     response.set_cookie('session_id', '', expires=0, secure=True, httponly=True, samesite='Lax')
