@@ -2,23 +2,32 @@ import json, os, redis, logging, hmac, hashlib
 from flask_caching import Cache
 from flask_limiter.util import get_remote_address
 from datetime import timedelta, datetime
-from .session import *
+from .session import key_gen
 
-HMAC_SECRET = generate_key()
+HMAC_SECRET = key_gen.generate_key()
 window_duration = timedelta(minutes=1)
+
+# Connection Pool: Create a global pool variable
 redis_pool = None
 
+# Initialize Redis connection with connection pooling
 def get_redis_connection():
     global redis_pool
     with open('Database/caching.json') as config_file:
         config_data = json.load(config_file)
     redis_url_index = int(os.getenv('REDIS_URL_INDEX', 0))
     redis_urls = config_data.get('redis_urls', [])
+    
     if redis_url_index >= len(redis_urls):
         raise ValueError("Invalid REDIS_URL_INDEX value")
+    
     redis_url = redis_urls[redis_url_index]
+
+    # Initialize connection pool if not already initialized
     if redis_pool is None:
         redis_pool = redis.ConnectionPool.from_url(redis_url)
+
+    # Use the connection pool to get a connection
     return redis.Redis(connection_pool=redis_pool)
 
 def configure_cache(app):
@@ -28,6 +37,7 @@ def configure_cache(app):
     redis_urls = config_data.get('redis_urls', [])    
     if redis_url_index >= len(redis_urls):
         raise ValueError("Invalid REDIS_URL_INDEX value")
+    
     redis_url = redis_urls[redis_url_index]
     app.config['CACHE_TYPE'] = 'RedisCache'
     app.config['CACHE_REDIS_URL'] = redis_url
@@ -44,8 +54,10 @@ def push_session_data(redis_conn, session_id, session_data, timeout=1800, max_le
         logging.error("max_length must be greater than 0")
         return
     try:
+        # Parse session_data if it is a JSON string
         if isinstance(session_data, str):
             session_data = json.loads(session_data)
+        # Convert lockout_expiration to string if it is a datetime
         if 'lockout_expiration' in session_data and isinstance(session_data['lockout_expiration'], datetime):
             session_data['lockout_expiration'] = session_data['lockout_expiration'].strftime('%Y-%m-%d %H:%M:%S')
         session_data_json = json.dumps(session_data)
@@ -64,6 +76,7 @@ def pop_data(redis_conn, key):
         value = redis_conn.get(key)   # Retrieve the value before deleting
         redis_conn.delete(key)        # Delete the key from Redis
     return value
+
 redis_conn = get_redis_connection()
 
 def get_redis_uri():

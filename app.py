@@ -2,6 +2,7 @@
 import string, os, json, secrets, base64, secrets, logging
 from io import BytesIO
 from datetime import timedelta, datetime
+from collections import deque
 
 # Third-party imports
 from flask import Flask, render_template, redirect, session, request, make_response, jsonify, Response, current_app
@@ -19,7 +20,7 @@ from Modules.error_handler import ErrorHandler
 from Modules.rate_limiter import *
 from Modules.redis_manager import *
 from Modules.db_manager import db_manager
-from Modules.session import generate_session_key, generate_key
+from Modules.session import key_gen
 from Modules.form import LoginForm
 from Modules.captcha_manager import captcha
 from Modules.lockout_manager import LockoutManager
@@ -31,7 +32,7 @@ from functools import wraps
 app = Flask(__name__)
 error_handler = ErrorHandler(app)
 app.config['error_handler'] = error_handler
-app.secret_key = generate_key()
+app.secret_key = key_gen.generate_key()
 
 app.config.update({
     'ENV': 'development',
@@ -70,6 +71,8 @@ limiter = Limiter(
 
 SESSION_TIMEOUT = 60
 app.permanent_session_lifetime = timedelta(seconds=SESSION_TIMEOUT)
+request_times = deque()  
+window_duration = timedelta(minutes=1)
 
 ph = PasswordHasher()
 
@@ -286,7 +289,7 @@ def login_route():
                 return render_template('auth.html', login_error='Invalid role.', login_form=login_form, captcha_image_base64=captcha_image_base64, login_honeypots=login_honeypots)
             session.get('_csrf_token')
             session.clear()
-            session_id = generate_session_key()
+            session_id = key_gen.generate_session_key()
             session['session_id'] = session_id
             session['user'] = user
             session['user_id'] = generate_user_id(name)
