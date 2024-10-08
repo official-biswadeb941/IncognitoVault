@@ -1,8 +1,7 @@
 # Standard library imports
-import string, os, json, secrets, base64, hmac, secrets, hashlib, logging
+import string, os, json, secrets, base64, secrets, logging
 from io import BytesIO
 from datetime import timedelta, datetime
-from collections import deque
 
 # Third-party imports
 from flask import Flask, render_template, redirect, session, request, make_response, jsonify, Response, current_app
@@ -71,8 +70,6 @@ limiter = Limiter(
 
 SESSION_TIMEOUT = 60
 app.permanent_session_lifetime = timedelta(seconds=SESSION_TIMEOUT)
-request_times = deque()  
-window_duration = timedelta(minutes=1)
 
 ph = PasswordHasher()
 

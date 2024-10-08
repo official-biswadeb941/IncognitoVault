@@ -9,8 +9,6 @@ class LoginForm(FlaskForm):
                        validators=[DataRequired()],
                        filters=[lambda x: bleach.clean(x.strip()) if x else None])  # Strip and clean
     password = PasswordField('Password', validators=[DataRequired()])
-    
-    # Adding a role dropdown for users to select their role
     role = SelectField('Role', 
                        choices=[('admin', 'Admin'), 
                                 ('super_admin', 'Super Admin'), 

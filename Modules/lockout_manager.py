@@ -9,7 +9,6 @@ class LockoutManager:
 
     @staticmethod
     def is_account_locked(user):
-        """Check if the user's account is locked."""
         lockout_expiration = user['lockout_expiration']
         if lockout_expiration is None:
             return False
@@ -22,7 +21,6 @@ class LockoutManager:
 
     @staticmethod
     def increase_lockout_time(user):
-        """Increase lockout time by a certain increment."""
         new_lockout_time = datetime.now() + LockoutManager.LOCKOUT_INCREMENT
         try:
             conn = db_manager.get_connection()
@@ -37,7 +35,6 @@ class LockoutManager:
 
     @staticmethod
     def reset_failed_attempts(user):
-        """Reset failed login attempts after a successful login."""
         try:
             conn = db_manager.get_connection()
             with conn.cursor() as cursor:
@@ -51,7 +48,6 @@ class LockoutManager:
 
     @staticmethod
     def increment_failed_attempts(user):
-        """Increment failed login attempts and lock the account if necessary."""
         try:
             conn = db_manager.get_connection()
             with conn.cursor() as cursor:

@@ -33,25 +33,19 @@ class ErrorHandler:
         self.register_handlers()
 
     def register_handlers(self):
-        """Registers error handlers for all the specified error codes"""
         for code in self.error_pages:
             self.app.errorhandler(code)(self.handle_error)
-
-        # Handle all uncaught exceptions with a generic error handler
         self.app.errorhandler(Exception)(self.handle_exception)
 
     def handle_error(self, e):
-        """Handles HTTP errors (registered in self.error_pages)"""
         error_code = e.code if isinstance(e, HTTPException) else 500
         return self.render_error_page(error_code)
 
     def handle_exception(self, e):
-        """Handles unexpected non-HTTP exceptions (as 500 errors)"""
         logging.exception(f"Unexpected error: {str(e)}")
         return self.render_error_page(500)
 
     def render_error_page(self, error_code):
-        """Renders the appropriate error page for the given error code"""
         template = self.error_pages.get(error_code, 'Error-Page/default.html')
         logging.error(f"Rendering error page for {error_code}: {template}")
         return render_template(template), error_code
