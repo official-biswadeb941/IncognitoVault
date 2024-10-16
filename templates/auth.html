@@ -72,8 +72,12 @@
         <div class="captcha">
           <label for="captcha">Solve the given Captcha</label>
           <br>
-          <img src="data:image/png;base64,{{ captcha_image_base64 }}" alt="CAPTCHA">
+          <img id="captcha-image" src="" alt="CAPTCHA">
        </div>
+       <div class="d-flex justify-content-center mt-2">
+        <i class="fas fa-sync-alt text-primary" style="cursor:pointer;" onclick="reloadCaptcha()"></i>
+        <span style="cursor:pointer;" onclick="reloadCaptcha()" class="text-primary ml-1">Reload Captcha</span>
+      </div>     
        <br>
         <div class="form-group">
           <input type="text" class="form-control" placeholder="Enter the captcha shown above" id="captcha" name="captcha" autocomplete="off">
@@ -90,6 +94,5 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
   <script src="{{ url_for('static', filename='JS/auth.js') }}"></script>
   
-
 </body>
 </html>

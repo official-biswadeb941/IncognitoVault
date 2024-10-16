@@ -1,11 +1,11 @@
 # Standard library imports
-import string, os, json, secrets, base64, secrets, logging
+import string, os, json, secrets, base64, secrets, logging, requests
 from io import BytesIO
 from datetime import timedelta, datetime
 from collections import deque
 
 # Third-party imports
-from flask import Flask, render_template, redirect, session, request, make_response, jsonify, Response, current_app
+from flask import Flask, render_template, redirect, session, request, make_response, jsonify, Response, current_app, send_file
 from flask_wtf import CSRFProtect
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -204,6 +204,16 @@ def save_session(response: Response):
             logging.error(f"Error saving session: {e}")
     return response
 
+@app.route('/api/captcha', methods=['GET'])
+@rate_limited(rate_limiter)
+def captcha_api():
+    captcha_image, captcha_answer = captcha.generate_captcha()
+    buffer = BytesIO()
+    captcha_image.save(buffer, format='PNG')
+    buffer.seek(0)
+    session['captcha_answer'] = captcha_answer
+    return send_file(buffer, mimetype='image/png')
+
 #################### Authentication Routes #######################
 def generate_honeypot_fields_for_fields(fields, length=64):
     return {f'{field}_hpot': ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(length))
@@ -253,13 +263,9 @@ def login_required(f):
 @app.route('/')
 def index():
     login_form = LoginForm()
-    captcha_image, captcha_answer = captcha.generate_captcha()
-    session['captcha_answer'] = captcha_answer
-    buffer = BytesIO()
-    captcha_image.save(buffer, format='PNG')
-    buffer.seek(0)
-    captcha_image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
-    login_fields = ['userType','login_username', 'login_password', 'login_captcha']
+    response = requests.get(f"{request.url_root}api/captcha")
+    captcha_image_base64 = base64.b64encode(response.content).decode('utf-8')
+    login_fields = ['userType', 'login_username', 'login_password', 'login_captcha']
     login_honeypots = generate_honeypot_fields_for_fields(login_fields, length=64)
     return render_template('auth.html', login_form=login_form, captcha_image_base64=captcha_image_base64, login_honeypots=login_honeypots, app_id=app_id)
 
@@ -280,6 +286,7 @@ def login_route():
         user, error_message = login(name, password)
         if user:
             if role != 'super_admin' and user['is_super_admin']:
+                response = requests.get(f"{request.url_root}api/captcha")
                 captcha_image, captcha_answer = captcha.generate_captcha()
                 buffer = BytesIO()
                 captcha_image.save(buffer, format='PNG')
@@ -305,6 +312,7 @@ def login_route():
             response.set_cookie('session_id', session.get('session_id', ''), max_age=SESSION_TIMEOUT, httponly=True, secure=True, samesite='Lax')
             return response
         else:
+            response = requests.get(f"{request.url_root}api/captcha")
             captcha_image, captcha_answer = captcha.generate_captcha()
             buffer = BytesIO()
             captcha_image.save(buffer, format='PNG')
@@ -312,6 +320,7 @@ def login_route():
             captcha_image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
             session.update({'captcha_answer': captcha_answer, 'captcha_image_base64': captcha_image_base64})
             return render_template('auth.html', login_error=error_message, login_form=login_form, captcha_image_base64=captcha_image_base64, login_honeypots=login_honeypots)
+    response = requests.get(f"{request.url_root}api/captcha")
     captcha_image, captcha_answer = captcha.generate_captcha()
     buffer = BytesIO()
     captcha_image.save(buffer, format='PNG')

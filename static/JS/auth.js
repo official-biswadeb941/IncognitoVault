@@ -72,6 +72,27 @@ document.getElementById('loginForm').addEventListener('submit', function(event) 
   }, 3000); // 3 second delay for testing
 });
 
+function loadCaptcha() {
+  fetch('/api/captcha')
+      .then(response => {
+          if (!response.ok) {
+              throw new Error('Network response was not ok');
+          }
+          return response.blob(); 
+      })
+      .then(blob => {
+          const imgUrl = URL.createObjectURL(blob);
+          document.getElementById('captcha-image').src = imgUrl;
+      })
+      .catch(error => {
+          console.error('There has been a problem with your fetch operation:', error);
+      });
+}
+function reloadCaptcha() {
+  loadCaptcha();
+}
+window.onload = loadCaptcha;
+
 document.addEventListener('DOMContentLoaded', function() {
   const roleDropdown = document.getElementById('role');
   const body = document.body;
