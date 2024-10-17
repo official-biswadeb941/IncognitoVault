@@ -2,6 +2,7 @@
 # CMD-2 sudo systemctl daemon-reload
 # CMD-3 sudo systemctl enable Incognito.service
 # CMD-4 sudo systemctl start Incognito.service
+#sudo cp ./Incognito.service /etc/systemd/system/Incognito.service && sudo systemctl daemon-reload && sudo systemctl enable Incognito.service && sudo systemctl start Incognito.service
 
 
 
@@ -14,7 +15,7 @@ User=official-biswadeb941
 Group=www-data
 WorkingDirectory=/home/official-biswadeb941/Desktop/Projects/IncognitoVault
 Environment="PATH=/home/official-biswadeb941/Desktop/Projects/IncognitoVault/.venv/bin"
-ExecStart=/home/official-biswadeb941/Desktop/Projects/IncognitoVault/.venv/bin/gunicorn --workers 4 --bind 0.0.0.0:8800 wsgi:main
+ExecStart=/home/official-biswadeb941/Desktop/Projects/IncognitoVault/.venv/bin/gunicorn --workers 4 --bind 0.0.0.0:880 main:main
 
 [Install]
 WantedBy=multi-user.target
