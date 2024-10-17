@@ -1,0 +1,20 @@
+# CMD-1 sudo cp /etc/systemd/system/Incognito.service.
+# CMD-2 sudo systemctl daemon-reload
+# CMD-3 sudo systemctl enable Incognito.service
+# CMD-4 sudo systemctl start Incognito.service
+
+
+
+[Unit]
+Description=Gunicorn instance to serve Incognito-Vault
+After=network.target
+
+[Service]
+User=official-biswadeb941
+Group=www-data
+WorkingDirectory=/home/official-biswadeb941/Desktop/Projects/IncognitoVault
+Environment="PATH=/home/official-biswadeb941/Desktop/Projects/IncognitoVault/.venv/bin"
+ExecStart=/home/official-biswadeb941/Desktop/Projects/IncognitoVault/.venv/bin/gunicorn --workers 4 --bind 0.0.0.0:8800 wsgi:main
+
+[Install]
+WantedBy=multi-user.target
