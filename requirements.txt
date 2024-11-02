@@ -13,3 +13,7 @@ Flask-Session
 flask_caching
 pillow
 gunicorn
+psutil
+dbutils
+flask_cors
+bleach
