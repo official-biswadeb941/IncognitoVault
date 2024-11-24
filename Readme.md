@@ -282,7 +282,7 @@ This project is licensed under the `Incognito-Vault Attribution & Compliance Lic
 
 By using, modifying, or distributing this software, you agree to comply with the terms outlined in the license, including proper attribution to `ParseSphere Innovations`.
 
-For full details, refer to the [LICENSE](LICENSE) file included in this repository.  
+For full details, refer to the [LICENSE](License.md) file included in this repository.  
 
 ---
 
