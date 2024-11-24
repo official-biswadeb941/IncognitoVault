@@ -42,6 +42,10 @@ Incognito-Vault — Redefining security for business, professionals and students
 ├── requirements.py               # Library Requirement 
 ├── Database                      # Database configuration file
 ├── Projects.md                   # Documentation
+├── Database                      # Database configuration file
+├── Database                      # Database configuration file
+├── Audit_Report.md               # Audit report configuration file
+├── LICENSE                       # License
 └── README.md                     # Readme file
 
 ```
