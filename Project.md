@@ -1,4 +1,6 @@
-Incognito-Vault   -------------   One of the most secure website for Office Works, Student Works, etc. (Made By ParseSPhere Innovation.)
+```bash
+
+Incognito-Vault — Redefining security for business, professionals and students. Trust, Innovations & Security. (Powered by ParseSphere Innovations).
 │
 ├── templates/
 │   ├── auth.html                 # Login Form
@@ -41,3 +43,5 @@ Incognito-Vault   -------------   One of the most secure website for Office Work
 ├── Database                      # Database configuration file
 ├── Projects.md                   # Documentation
 └── README.md                     # Readme file
+
+```
