@@ -47,6 +47,7 @@ Incognito-Vault Version: 1.0.0 — Redefining security for business, professiona
 ├── Database                      # Database configuration file
 ├── Audit_Report.md               # Audit report configuration file
 ├── LICENSE                       # License
+├── CHNAGELOG.md                  # Version Control
 └── README.md                     # Readme file
 
 ```
