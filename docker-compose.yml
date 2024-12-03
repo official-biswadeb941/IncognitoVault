@@ -1,0 +1,8 @@
+version: "3.8"
+services:
+  flask-uwsgi-app:
+    image: flask-uwsgi-app
+    ports:
+      - "8800:8800"
+    container_name: flask-uwsgi-app
+    restart: unless-stopped

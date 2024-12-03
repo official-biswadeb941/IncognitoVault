@@ -17,3 +17,4 @@ psutil
 dbutils
 flask_cors
 bleach
+uWSGI
