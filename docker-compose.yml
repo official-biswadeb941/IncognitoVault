@@ -1,8 +1,8 @@
 version: "3.8"
 services:
-  flask-uwsgi-app:
-    image: flask-uwsgi-app
+  IncognitoVaultService:
+    image: Incognito-Vault 1.0.0
     ports:
       - "8800:8800"
-    container_name: flask-uwsgi-app
+    container_name: Incognito-Vault
     restart: unless-stopped

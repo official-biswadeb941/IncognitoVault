@@ -24,6 +24,7 @@ from Modules.session import key_gen
 from Modules.form import LoginForm
 from Modules.captcha_manager import captcha
 from Modules.lockout_manager import LockoutManager
+from Modules.version import __version__
 
 # functools is not removed since it's probably used for decorators (verify before removing)
 from functools import wraps
@@ -88,7 +89,6 @@ def create_super_admin():
         with conn.cursor() as cursor:
             cursor.execute("SHOW TABLES LIKE 'super_admin'")
             if cursor.fetchone():
-                print("Super admin table already exists.")
                 return None
             else:
                 sql = """
@@ -408,4 +408,5 @@ def keep_alive():
     return jsonify(message="Session kept alive"), 200
 
 if __name__ == '__main__':
+    print(f"Incognito-Vault, Version: {__version__}")
     app.run(debug=False, host='0.0.0.0', port=8800)

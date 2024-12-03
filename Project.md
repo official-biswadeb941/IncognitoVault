@@ -1,6 +1,6 @@
 ```bash
 
-Incognito-Vault — Redefining security for business, professionals and students. Trust, Innovations & Security. (Powered by ParseSphere Innovations).
+Incognito-Vault Version: 1.0.0 — Redefining security for business, professionals and students. Trust, Innovations & Security. (Powered by ParseSphere Innovations).
 │
 ├── templates/
 │   ├── auth.html                 # Login Form
@@ -35,7 +35,8 @@ Incognito-Vault — Redefining security for business, professionals and students
 │   ├── rate_limit.py             # Rate Limiter
 │   ├── redis_manager.py          # Redis Manager
 │   ├── session_manager.py        # Session Manager
-│   └── form.py                   # custom form code
+│   ├── form.py                   # custom form code
+│   └── version.py                # Contains Version
 │
 ├── app.py                        # Main application entry point
 ├── .gitignore                    # Gitignore

@@ -3,6 +3,10 @@
 
 Incognito-Vault is a secure, scalable, and feature-rich platform designed to streamline database management, logging, and forms for both office and student needs, with robust security features and an intuitive interface.  
 
+## Version Information
+- **Current Version**: `v1.0.0`
+- **Release Date**: December 3, 2024
+
 ---
 
 ## Table of Contents  
