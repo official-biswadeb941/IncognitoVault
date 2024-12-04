@@ -70,19 +70,44 @@ Incognito-Vault ensures the highest level of security through the following feat
 
 For detailed information on the project structure and modules, refer to the [Project Documentation](Project.md).  
 
----
 
 ## Production Deployment  
 
 To deploy **Incognito-Vault** in a production environment, follow these steps:
 
 ### 1. Prerequisites  
-- **Server Requirements**:  
-  - Python 3.8+  
-  - Virtual Environment
-  - A production-ready WSGI server (e.g., **Gunicorn**)  
-  - Redis installed and configured  
-  - Nginx or Apache as a reverse proxy (optional but recommended)  
+
+## System Requirements
+
+- **Operating System**:
+  - Linux (e.g., Ubuntu 20.04+ or CentOS 7+) (For Production Environment)
+  - macOS (for development only)
+  - Windows 10/11 (WSL2 recommended for development)
+
+- **Memory**:
+  - Minimum: 2 GB RAM
+  - Recommended: 4+ GB RAM
+
+- **Disk Space**:
+  - Minimum: 20 GB free
+  - Recommended: 50 GB free
+
+- **CPU**:
+  - 64-bit processor
+  - Multi-core recommended for better performance
+
+---
+
+## Server Setup Configurations
+
+- Python 3.8+
+- Python Virtual Environment
+- A production-ready WSGI server (e.g., **uWSGI**)
+- Redis installed and configured
+- Mysql installed and configured
+- Nginx or Apache as a reverse proxy (optional but recommended)
+
+
 
 - **Virtual Environment Creation &  Configuration**:  
   - Create a virtual environment
@@ -96,7 +121,6 @@ To deploy **Incognito-Vault** in a production environment, follow these steps:
     source .venv/bin/activate
     ```
   - Set environment variables for database credentials, Redis, and Flask settings (e.g., `FLASK_ENV=production`).  
-
 
 ---
 ### 2. Install Dependencies  
@@ -114,16 +138,13 @@ To deploy **Incognito-Vault** in a production environment, follow these steps:
 
 ---
 
-### 4. Use Gunicorn for WSGI
+### 4. Use UWSGI for WSGI Server
 
-- Run the application using **Gunicorn**:
+- Run the application using **uWSGI**:
 
     ```bash
-    gunicorn -w 4 -b 0.0.0.0:8000 app:app
+    uwsgi --ini uwsgi.ini
     ```
-  - `-w 4`: Specifies the number of worker processes (adjust based on your server resources).
-  - `-b`: Binds the application to a specific host and port.
-
 ---
 
 ### 5. Configure Reverse Proxy (Optional but Recommended)
