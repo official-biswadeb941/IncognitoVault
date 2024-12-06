@@ -36,6 +36,7 @@ Incognito-Vault Version: 1.0.0 — Redefining security for business, professiona
 │   ├── redis_manager.py          # Redis Manager
 │   ├── session_manager.py        # Session Manager
 │   ├── form.py                   # custom form code
+│   ├── api.py                    # API Endpoint
 │   └── version.py                # Contains Version
 │
 ├── app.py                        # Main application entry point
