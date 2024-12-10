@@ -1,0 +1,11 @@
+{
+    "1_DB": {
+        "host": "localhost",
+        "user": "IncognitoVault",
+        "password": "IV_2024",
+        "database": "INCOG_db_2",
+        "port": 3306
+    }
+}
+
+

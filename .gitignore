@@ -1,8 +1,5 @@
 .venv
-venv
-Database/
-/Database/Certificate/ca.pem
-/Database/config.json
+venv/
 dump.rdb
 /modules/__pycache__
 __pycache__
