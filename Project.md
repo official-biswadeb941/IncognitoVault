@@ -14,6 +14,11 @@ Incognito-Vault Version: 1.0.0 — Redefining security for business, professiona
 │       ├── form.html             # Template for form 
 │       ├── logs.html             # Template for logs
 │       └── settings.html         # Template for settings
+│ 
+├── Database/
+│   ├── Config                    # Contain User Credentials
+│   ├── mysql.json                # Contain Mysql Credentials
+│   └── Super-Admin/              # Contain Redis Credentials
 │
 ├── static/
 │   ├── css/                      # CSS files

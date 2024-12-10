@@ -111,8 +111,8 @@ def create_super_admin():
             if super_admin_exists:
                 print("Super admin already exists in the database.")
                 return 
-            config_folder = 'Config'
-            credentials_file = os.path.join(config_folder, 'creds.json')
+            config_folder = 'Database'
+            credentials_file = os.path.join(config_folder, 'Config/Creds.json')
             with open(credentials_file, 'r') as f:
                 creds = json.load(f)
             default_username = creds.get('username')

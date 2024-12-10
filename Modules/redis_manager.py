@@ -13,7 +13,7 @@ redis_pool = None
 # Initialize Redis connection with connection pooling
 def get_redis_connection():
     global redis_pool
-    with open('Database/caching.json') as config_file:
+    with open('Database/redis.json') as config_file:
         config_data = json.load(config_file)
     redis_url_index = int(os.getenv('REDIS_URL_INDEX', 0))
     redis_urls = config_data.get('redis_urls', [])
@@ -31,7 +31,7 @@ def get_redis_connection():
     return redis.Redis(connection_pool=redis_pool)
 
 def configure_cache(app):
-    with open('Database/caching.json') as config_file:
+    with open('Database/redis.json') as config_file:
         config_data = json.load(config_file)
     redis_url_index = int(os.getenv('REDIS_URL_INDEX', 0))
     redis_urls = config_data.get('redis_urls', [])    
@@ -80,7 +80,7 @@ def pop_data(redis_conn, key):
 redis_conn = get_redis_connection()
 
 def get_redis_uri():
-    with open('Database/caching.json') as config_file:
+    with open('Database/redis.json') as config_file:
         config_data = json.load(config_file)
     redis_url_index = int(os.getenv('REDIS_URL_INDEX', 0))
     redis_urls = config_data.get('redis_urls', [])

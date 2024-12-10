@@ -147,7 +147,24 @@ To deploy **Incognito-Vault** in a production environment, follow these steps:
     ```
 ---
 
-### 5. Configure Reverse Proxy (Optional but Recommended)
+### `5. Having Problem with Installation!! Getting Error!! Don't Know from Where to start!!.`
+
+- Feel free to call Inku Assistant, Your very own assistant in Incognito-Vault and it will solve all the above problems.
+     
+     - Give necessary permissions to Inku Assistant.
+
+        ```bash
+        chmod +x Inku.sh
+        ```
+     - Call Inku Assistant for Server Setup.
+
+        ```bash
+        ./Inku.sh
+        ```
+        
+---
+
+### 6. Configure Reverse Proxy (Optional but Recommended)
  - Use Nginx to serve as a reverse proxy to forward requests to Gunicorn. Example Nginx configuration:
 
     ```bash

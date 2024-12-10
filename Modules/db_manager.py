@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %
 
 class DatabaseManager:
     def __init__(self, config_path=None, db_section='1_DB'):
-        self.config_path = config_path or os.getenv('DB_CONFIG_PATH', 'Database/DB.json')
+        self.config_path = config_path or os.getenv('DB_CONFIG_PATH', 'Database/mysql.json')
         self.db_section = db_section
         self.pool = None
         self.ssl_config = None
@@ -63,14 +63,7 @@ class DatabaseManager:
         try:
             db_config = self._load_db_config()
             self._validate_db_config(db_config) 
-            self.ssl_config = db_config.get('ssl', {})
-            ca_path = self.ssl_config.get('ca')
-            if ca_path:
-                self.ssl_config['ca'] = os.path.join('Database', ca_path)
-                self.ssl_config['check_hostname'] = True  # Enforce hostname checking
-                self.ssl_config['ssl_disabled'] = False  # Ensure SSL is not disabled
-            else:
-                raise ValueError("SSL configuration missing 'ca' key.")
+            self._create_database_if_not_exists(db_config)  # Ensure database exists
             self.max_connections, self.min_cached, self.max_cached, self.max_shared = self._calculate_pool_parameters()
             self.pool = PooledDB(
                 creator=pymysql,
@@ -84,8 +77,7 @@ class DatabaseManager:
                 password=db_config['password'],
                 database=db_config['database'],
                 port=int(db_config['port']),
-                cursorclass=pymysql.cursors.DictCursor,
-                ssl=self.ssl_config
+                cursorclass=pymysql.cursors.DictCursor
             )
         except ValueError as ve:
             error_message = f"Configuration error: {ve}."
@@ -93,6 +85,31 @@ class DatabaseManager:
             raise Exception(error_message)
         except Exception as e:
             error_message = f"Failed to initialize the database connection pool: {e}."
+            logging.error(error_message)
+            raise Exception(error_message)
+
+    def _create_database_if_not_exists(self, db_config):
+        """Check if the database exists, and create it if not."""
+        try:
+            # Connect to MySQL server (not to the database)
+            connection = pymysql.connect(
+                host=db_config['host'],
+                user=db_config['user'],
+                password=db_config['password'],
+                port=int(db_config['port']),
+                cursorclass=pymysql.cursors.DictCursor
+            )
+            with connection.cursor() as cursor:
+                # Check if the database exists
+                cursor.execute("SHOW DATABASES LIKE %s", (db_config['database'],))
+                result = cursor.fetchone()
+                if not result:
+                    # Database doesn't exist, create it
+                    cursor.execute(f"CREATE DATABASE {db_config['database']}")
+                    logging.info(f"Database '{db_config['database']}' created.")
+            connection.close()
+        except Exception as e:
+            error_message = f"Failed to check or create the database: {e}."
             logging.error(error_message)
             raise Exception(error_message)
 
