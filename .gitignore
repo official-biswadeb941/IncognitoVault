@@ -13,6 +13,5 @@ instance/
 .pytest_cache
 Features.txt
 __pycache__
-Config
 Logs
 Logs/app.log/
