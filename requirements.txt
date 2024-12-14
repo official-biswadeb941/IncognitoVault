@@ -19,3 +19,4 @@ flask_cors
 bleach
 uWSGI
 bumpversion
+gitpython

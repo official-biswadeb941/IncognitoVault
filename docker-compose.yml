@@ -1,8 +1,12 @@
-version: "3.8"
 services:
   IncognitoVaultService:
-    image: Incognito-Vault 1.0.0
+    image: incognito-vault:1.0.0
     ports:
       - "8800:8800"
-    container_name: Incognito-Vault
+    container_name: incognito-vault
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: "1g"
