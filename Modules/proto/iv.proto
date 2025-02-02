@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package incognito.vault;
+
+// Define a service with generic request/response types
+service IncognitoVaultService {
+  rpc ExchangeData (DynamicRequest) returns (DynamicResponse);
+  rpc StreamData (stream DynamicRequest) returns (stream DynamicResponse);
+}
+
+// Generic request structure
+message DynamicRequest {
+  string operation = 1;  // Operation type (e.g., "SYNC", "COMMAND", "AUTH")
+  map<string, string> metadata = 2; // Additional metadata for the request
+  bytes payload = 3;  // Flexible binary payload (e.g., JSON, binary data)
+}
+
+// Generic response structure
+message DynamicResponse {
+  bool success = 1;  // Whether the operation succeeded
+  string message = 2; // Response message
+  bytes data = 3;  // Flexible binary response data (e.g., JSON, binary data)
+}

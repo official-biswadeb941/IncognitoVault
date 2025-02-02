@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Semantic Versioning](https://semver.org/).
 
+## version: 1.1.3   (02/02/2025)
+### Added
+- Updated Dashboard UI
+- Added various meter guages in dashboard + Private & Public IP addresses Exposure in dashboard.
+
 ## version: 1.0.3   (14/12/2024)
 ### Added
 - Added SRS Documentation

@@ -1,5 +1,5 @@
 # Standard library imports
-import string, os, json, secrets, base64, secrets, logging, requests
+import string, os, json, secrets, base64, secrets, logging, requests, subprocess
 from io import BytesIO
 from datetime import timedelta, datetime
 from collections import deque
@@ -16,6 +16,8 @@ from argon2.exceptions import VerifyMismatchError
 
 
 # Custom module imports
+from Modules.health_checker import HealthChecker
+from Modules.IPS import IPAddress
 from Modules.error_handler import ErrorHandler
 from Modules.rate_limiter import *
 from Modules.redis_manager import *
@@ -24,7 +26,7 @@ from Modules.session import key_gen
 from Modules.form import LoginForm
 from Modules.captcha_manager import captcha
 from Modules.lockout_manager import LockoutManager
-from Modules.api import api
+#from Modules.gRPC import api
 from Modules.version import __version__
 
 # functools is not removed since it's probably used for decorators (verify before removing)
@@ -50,6 +52,7 @@ app.config.update({
     'WTF_CSRF_TIME_LIMIT': None,
     'PERMANENT_SESSION_LIFETIME': timedelta(seconds=60)
 })
+
 
 redis_conn = get_redis_connection() 
 rate_limiter = RateLimiter(
@@ -260,9 +263,14 @@ def login_required(f):
     return decorated_function
 
 #################### Route Handlers ######################
-@app.route('/Public_API', methods=['GET'])
-def Public_API():
-    return api.handle_request(request)
+
+@app.route("/health", methods=["GET"])
+@login_required
+@rate_limited(rate_limiter)
+def get_health_status():
+    health_status = HealthChecker.health_check()
+    return jsonify(health_status)
+
 
 @rate_limited(rate_limiter)
 @app.route('/')
@@ -342,7 +350,9 @@ def dashboard():
         user = session['user']
         name = session['username']
         user_id = session['user_id']
-        return render_template('Super-Admin/dashboard.html', user=user, user_id=user_id, name=name)
+        ip_instance = IPAddress()
+        ips = ip_instance.get_ips()
+        return render_template('Super-Admin/dashboard.html', user=user, user_id=user_id, name=name, ips=ips)
     return redirect('/')
 
 @app.route('/Database')
@@ -414,5 +424,4 @@ def keep_alive():
 
 if __name__ == '__main__':
     print(f"Incognito-Vault, Version: {__version__}")
-    #print(f"Your API key is: {api.api_key}")
-    app.run(debug=False, host='0.0.0.0', port=8800)
+    app.run(debug=True, threaded="yes", host='0.0.0.0', port=8800)

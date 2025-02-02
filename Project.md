@@ -41,7 +41,7 @@ Incognito-Vault Version: 1.0.0 — Redefining security for business, professiona
 │   ├── redis_manager.py          # Redis Manager
 │   ├── session_manager.py        # Session Manager
 │   ├── form.py                   # custom form code
-│   ├── api.py                    # API Endpoint
+│   ├── grpc.py                    # gRPC protocol for server to server syncing (Databases, sending and receiving requests, etc...)
 │   └── version.py                # Contains Version
 │
 ├── app.py                        # Main application entry point

@@ -1,0 +1,179 @@
+/* CSS for table in Analyze_Traffic Page*/
+.table-container {
+    width: 100%;
+    max-height: 600px;
+    overflow-y: auto;
+    overflow-x: auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.7);  /* Glassmorphic black */
+    backdrop-filter: blur(8px);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Table Styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #0D0D0D; /* Diamond black */
+    color: #ffffff;  /* Light grey text for contrast */
+    font-family: Rubik;
+    text-align: center;
+    table-layout: auto;
+    border-radius: 12px;
+}
+
+/* Table Headers */
+th {
+    padding: 15px;
+    background: linear-gradient(135deg, #007BFF, #0047AB);
+    color: #FFFFFF;
+    text-transform: uppercase;
+    font-size: 14px;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    border-bottom: 2px solid #ffffff33;
+}
+
+/* Table Rows */
+td {
+    padding: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 14px;
+    word-wrap: break-word;
+    transition: background 0.3s ease-in-out;
+}
+
+/* Alternate Row Color */
+tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Hover Effect */
+tr:hover {
+    background: rgba(0, 123, 255, 0.2);
+    transform: scale(1.01);
+    transition: 0.3s ease-in-out;
+}
+
+/* Buttons Styling */
+#startBtn, #stopBtn {
+    width: 220px;
+    padding: 12px;
+    margin: 15px auto;
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff;
+    background: linear-gradient(135deg, #007BFF, #0047AB);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0px 4px 10px rgba(0, 123, 255, 0.3);
+    transition: all 0.3s ease;
+}
+
+#startBtn:hover, #stopBtn:hover {
+    background: linear-gradient(135deg, #0047AB, #007BFF);
+    transform: scale(1.05);
+}
+
+#startBtn:disabled, #stopBtn:disabled {
+    background: #555;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* Mobile Responsive Adjustments */
+@media screen and (max-width: 768px) {
+    .table-container {
+        max-height: 450px;
+    }
+    
+    th, td {
+        font-size: 12px;
+        padding: 10px;
+    }
+    
+    #startBtn, #stopBtn {
+        width: 180px;
+        padding: 10px;
+    }
+}
+
+.ips {
+    font-family: Rubik, Consolas;
+    font-weight: bold;
+    color: white;
+}
+
+/* Pulsating Led for MYSQL & REDIS Status Indicator*/
+.led-indicator {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 30px;
+    margin-bottom: 10px;
+    animation: pulse 3s ease-in-out infinite; /* Slightly slower pulse */
+    box-shadow: 0 0 10px rgba(40, 180, 99, 0.7); /* Green glow */
+}
+
+.green {
+    background-color: #28B463;
+}
+
+.red {
+    background-color: #FF5733;
+    box-shadow: 0 0 10px rgba(255, 87, 51, 0.7); /* Red glow */
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.8);
+        opacity: 0.8;
+        background-color: #00ff6a; /* Green */
+        box-shadow: 0 0 10px rgba(0, 255, 60, 0.7); /* Green glow */
+    }
+    50% {
+        transform: scale(1.5);
+        opacity: 1;
+        background-color: #1e8e40; /* Darker green */
+        box-shadow: 0 0 20px rgb(0, 146, 61); /* Stronger green glow */
+    }
+    100% {
+        transform: scale(0.8);
+        opacity: 0.8;
+        background-color:  #00ff6a;/* Green */
+        box-shadow: 0 0 10px rgba(0, 255, 106, 0.7); /* Green glow */
+    }
+}
+
+.red {
+    background-color: #FF5733;
+    box-shadow: 0 0 10px rgba(255, 87, 51, 0.7); /* Red glow */
+    animation: pulse-red 2s ease-in-out infinite; /* Slightly slower pulse */
+}
+
+@keyframes pulse-red {
+    0% {
+        transform: scale(0.8);
+        opacity: 0.8;
+        background-color: #FF5733; /* Red */
+        box-shadow: 0 0 10px rgba(255, 87, 51, 0.7); /* Red glow */
+    }
+    50% {
+        transform: scale(1.5);
+        opacity: 1;
+        background-color: #e04e2d; /* Darker red */
+        box-shadow: 0 0 20px rgba(255, 87, 51, 1); /* Stronger red glow */
+    }
+    100% {
+        transform: scale(0.8);
+        opacity: 0.8;
+        background-color: #FF5733; /* Red */
+        box-shadow: 0 0 10px rgba(255, 87, 51, 0.7); /* Red glow */
+    }
+}
+
+  
+

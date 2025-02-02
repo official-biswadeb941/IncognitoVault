@@ -20,3 +20,5 @@ bleach
 uWSGI
 bumpversion
 gitpython
+matplotlib
+netifaces
