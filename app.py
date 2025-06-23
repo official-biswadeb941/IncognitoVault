@@ -424,4 +424,4 @@ def keep_alive():
 
 if __name__ == '__main__':
     print(f"Incognito-Vault, Version: {__version__}")
-    app.run(debug=True, threaded="yes", host='0.0.0.0', port=8800)
+    app.run(debug=True, threaded="yes", host='0.0.0.0', port=3400)
